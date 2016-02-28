@@ -198,7 +198,7 @@ do
     	rm $i.$j.results 2>/dev/null
     		for k in "${RANDNAMES[@]}"
     		do
-    		bwa mem reference.fasta $k.R1.fq.gz $k.R2.fq.gz -L 20,5 -I $INSERT,$SD,$INSERTH,$INSERTL -t 32 -a -M -T 10 -A 1 -B 3 -O 5 -R "@RG\tID:$k\tSM:$k\tPL:Illumina" 2> bwa.$i.log | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/' | samtools view -@32 -q 1 -SbT reference.fasta - > $k.bam
+    		bwa mem reference.fasta $k.R1.fq.gz $k.R2.fq.gz -L 20,5 -I $INSERT,$SD,$INSERTH,$INSERTL -t 32 -a -M -T 10 -A 1 -B 4 -O 6 -R "@RG\tID:$k\tSM:$k\tPL:Illumina" 2> bwa.$i.log | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/' | samtools view -@32 -q 1 -SbT reference.fasta - > $k.bam
     		samtools sort -@32 $k.bam $k 
 		samtools index $k.bam
     		MM=$(samtools flagstat $k.bam | grep -E 'mapped \(|properly' | cut -f1 -d '+' | tr -d '\n')

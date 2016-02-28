@@ -405,45 +405,45 @@ curl -L -O https://github.com/jpuritz/dDocent/raw/master/scripts/ReferenceOpt.sh
 Take a look at the script ReferenceOpt.sh.  
 This script uses  different loops to assemble references from an interval of cutoff values and c values from 0.8-0.98.  It take as a while to run, so I have pasted the output below for you.
 ```bash
-bash ReferenceOpt.sh 4 8 4 8 PE 16
+#bash ReferenceOpt.sh 4 8 4 8 PE 16
 ```
 ```bash
                                           Histogram of number of reference contigs
   Number of Occurrences
-    200 ++----------------+-----------------+------------------+-----------------+-----------------+----------------++
-        +                 +                 +                 'plot.kopt.data' using (bin($1,binwidth)):(1.0)*********
-    180 ++                                                                                         *                +*
-        |                                                                                          *                 *
-        |                                                                                          *                 *
-    160 ++                                                                                         *                +*
-        |                                                                                          *                 *
-    140 ++                                                                                         *                +*
-        |                                                                                          *                 *
-        |                                                                                          *                 *
-    120 ++                                                                                         *                +*
-        |                                                                                          *                 *
-    100 ++                                                                                         *                +*
-        |                                                                                          *                 *
-     80 ++                                                                                         *                +*
-        |                                                                                          *                 *
-        |                                                                                          *                 *
-     60 ++                                                                                         *                +*
-        |                                   ********************************************************                 *
-     40 ++                                  *                                                      *                +*
-        |                                   *                                                      *                 *
-        |                                   *                                                      *                 *
-     20 ++                                  *                                                      *                +*
-        *************************************                  +                 +                 *                 *
+    200 ++--------------+--------------+---------------+--------------+---------------+--------------+--------------++
+        +               +              +               +      'plot.kopt.data' using (bin($1,binwidth)):(1.0)*********
+    180 ++                                                                                           *              +*
+        |                                                                                            *               *
+        |                                                                                            *               *
+    160 ++                                                                                           *              +*
+        |                                                                                            *               *
+    140 ++                                                                                           *              +*
+        |                                                                                            *               *
+        |                                                                                            *               *
+    120 ++                                                                                           *              +*
+        |                                                                                            *               *
+    100 ++                                                                                           *              +*
+        |                                                                                            *               *
+     80 ++                                                                                           *              +*
+        |                                                                                            *               *
+        |                                                                                            *               *
+     60 ++                                                                                           *              +*
+        |                                             ************************************************               *
+     40 ++                                            *                                              *              +*
+        |                                             *                                              *               *
+        |                                             *                                              *               *
+     20 ++                                            *                                              *              +*
+        ***********************************************+              +               +              *               *
       0 **************************************************************************************************************
-       990               992               994                996               998               1000              1002
+       988             990            992             994            996             998            1000            1002
                                                  Number of reference contigs
 
-Average contig number = 999.2
+Average contig number = 999.452
 The top three most common number of contigs
 X	Contig number
-190	1000
-20	999
-20	998
+164	1000
+19	998
+18	999
 The top three most common number of contigs (with values rounded)
 X	Contig number
 250	1000.0

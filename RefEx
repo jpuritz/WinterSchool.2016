@@ -681,47 +681,47 @@
 #40 Take a look at the script ReferenceOpt.sh  BUT PLEASE DON'T RUN IT!
 #40 This script uses two different loops to assemble references from K cutoff 2-30 and c values from 0.8-0.98.  It take as a while to run, and would likely overload the server if all of you started running it.
 #40 I have pasted the output below though.
-#c#41 	$#sh ReferenceOpt.sh 2 30#
-#41                                             Histogram of number of reference contigs
-#41     Number of Occurrences
-#41       50 ++------------+-------*******------------+-------------+-------------+-------------+------------+------------++
-#41          +             +       *     *            +             'plot.kopt.data' using (bin($1,binwidth)):(1.0) ****** +
-#41       45 ++                    *     *                                                                                ++
-#41          |                     *     *                                                                                 |
-#41          |                     *     *                                                                                 |
-#41       40 ++                    *     *                                                                                ++
-#41          |                     *     *                                                                                 |
-#41       35 ++                    *     *******                                                                          ++
-#41          |                     *     *     *************                                                               |
-#41          |                     *     *     *     *     *                                                               |
-#41       30 ++                    *     *     *     *     *                                                              ++
-#41          |                     *     *     *     *     *                                                               |
-#41       25 ++                    *     *     *     *     *                                                              ++
-#41          |                     *     *     *     *     ******                                                          |
-#41       20 ++               ******     *     *     *     *    *                                                         ++
-#41          |          *******    *     *     *     *     *    *                                                          |
-#41          |          *     *    *     *     *     *     *    *     *******                                              |
-#41       15 ++         *     *    *     *     *     *     *    *******     *                                             ++
-#41          |          *     *    *     *     *     *     *    *     *     *******                                        |
-#41       10 ++         *     *    *     *     *     *     *    *     *     *     *******                                 ++
-#41          |    *******     *    *     *     *     *     *    *     *     *     *     *                                  |
-#41          ******     *     *    *     *     *     *     *    *     *     *     *     *                                  |
-#41        5 *+   *     *     *    *     *     *     *     *    *     *     *     *     *                                 ++
-#41          *    *     *  +  *    *     *     *     *+    *    *   + *     *     *     ************         +             +
-#41        0 ********************************************************************************************************-----++
-#41         980           990           1000         1010          1020          1030          1040         1050          1060
-#41                                                    Number of reference contigs
+#c#41 	$#bash ReferenceOpt.sh 4 8 4 8 PE 16 
+#41                                           Histogram of number of reference contigs
+#41   Number of Occurrences
+#41     200 ++--------------+--------------+---------------+--------------+---------------+--------------+--------------++
+#41         +               +              +               +      'plot.kopt.data' using (bin($1,binwidth)):(1.0)*********
+#41     180 ++                                                                                           *              +*
+#41         |                                                                                            *               *
+#41         |                                                                                            *               *
+#41     160 ++                                                                                           *              +*
+#41         |                                                                                            *               *
+#41     140 ++                                                                                           *              +*
+#41         |                                                                                            *               *
+#41         |                                                                                            *               *
+#41     120 ++                                                                                           *              +*
+#41         |                                                                                            *               *
+#41     100 ++                                                                                           *              +*
+#41         |                                                                                            *               *
+#41      80 ++                                                                                           *              +*
+#41         |                                                                                            *               *
+#41         |                                                                                            *               *
+#41      60 ++                                                                                           *              +*
+#41         |                                             ************************************************               *
+#41      40 ++                                            *                                              *              +*
+#41         |                                             *                                              *               *
+#41         |                                             *                                              *               *
+#41      20 ++                                            *                                              *              +*
+#41         ***********************************************+              +               +              *               *
+#41       0 **************************************************************************************************************
+#41        988             990            992             994            996             998            1000            1002
+#41                                                  Number of reference contigs
 #41 
-#41 Average contig number = 1007.49
+#41 Average contig number = 999.452
 #41 The top three most common number of contigs
 #41 X	Contig number
-#41 15	1000
-#41 13	1004
-#41 12	999
+#41 164	1000
+#41 19	998
+#41 18	999
 #41	The top three most common number of contigs (with values rounded)
 #41	X	Contig number
-#41	289 1000.0
-#41 1 	1100.0
+#41	250	1000.0
+#41 
 #41
 #41	You can see that the most common number of contigs across all iteration is 1000, but also that the top three occuring and the average are all within 1% of the true value
 #41 Again, this is simulated data and with real data, the number of exact reference contigs is unknown and you will ultimately have to make a judgement call.

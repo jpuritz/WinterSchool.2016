@@ -173,15 +173,14 @@ bwa mem reference.fasta PopA_02.F.fq.gz PopA_02.R.fq.gz -I 200,40 -B 3 -O 5 2>/d
 ```
 lane1_fakedata837_6	133	dDocent_Contig_271	2	0	*	=	2	0	CGGGCAAATAGGCATGTGAACGTATTACCTCTCAGGCGCTTCTCTCGCGGTCGTTCAACCACTCAGTGATAAAAACGGTAAACAGGGCCTGTTAAGATTA	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
 ```
-Here, you can see that neither the forward or reverse reads in these pairs mapped to any contig.  This likely means that our reference is not entirely correct.  It might have the right number of loci, but not the correct loci.  However, 99.01% is not too shabby.
+Here, you can see that the reverse reads in this pair does not mapped to any contig.  This could mean that the second read is particularly divergent or that the reference is not completely representative.  However, at 99.99% we are doing well. 
 
 To get a better idea of how to optimize mapping further, let's take a look at some real (messy) data.
 ```bash
 mkdir realdata
 cd realdata
-ln -s ~/COURSE_DATA/BR_021.R*.fq.gz .
-ln -s ~/COURSE_DATA/reference.fasta* .
-bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 2>/dev/null | samtools view -@3 -q 1 -SbT reference.fasta - | samtools flagstat -
+ln -s /gdc_home5/groups/bag2016/monday/mapping/* .
+bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 8 2>/dev/null | samtools view -@3 -q 1 -SbT reference.fasta - | samtools flagstat -
 ```
 ```
 1801059 + 0 in total (QC-passed reads + QC-failed reads)
