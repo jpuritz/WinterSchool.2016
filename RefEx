@@ -30,14 +30,16 @@
 
 #4 Let's check that everything went well.
 
-#c#4	$unzip data.zip && ll 
+#c#4	$unzip data.zip 
+#c#4	ll 
 
 #4 You should see something like this:
-#4      total 4612
-#4     -rwxr--r--. 1 jpuritz users 600 Feb 23 03:36 SimRAD.barcodes
-#4     -rwxr--r--. 1 jpuritz users 2574784 Feb 23 03:36 SimRAD_R1.fastq.gz
-#4     -rwxr--r--. 1 jpuritz users 2124644 Feb 23 03:36 SimRAD_R2.fastq.gz
-#4     -rwxr--r--. 1 jpuritz users 12272 Feb 23 03:36 simRRLs2.py
+#4		total 7824
+#4      -rw-r--r--. 1 jpuritz users 3290183 Feb 28 13:31 data.zip
+#4      -rwxr--r--. 1 jpuritz users     600 Mar  6  2015 SimRAD.barcodes
+#4      -rwxr--r--. 1 jpuritz users 2574784 Mar  6  2015 SimRAD_R1.fastq.gz
+#4      -rwxr--r--. 1 jpuritz users 2124644 Mar  6  2015 SimRAD_R2.fastq.gz
+#4      -rwxr--r--. 1 jpuritz users   12272 Mar  6  2015 simRRLs2.py
 
 #5 The data that we are going to use was simulated using the simRRLs2.py script that I modified from the one published by Deren Eaton.  
 #5 You can find the original version here (http://dereneaton.com/software/simrrls/).  Basically, the script simulated ddRAD 1000 loci 
@@ -107,17 +109,81 @@
 #9 then gets the length of both arrays.  It then iterates with a for loop the task of renaming the samples.  
 #10
 #10 Now run the script to rename your samples and take a look at the output
-#c#10	$sh Rename_for_dDocent.sh SimRAD.barcodes
+#c#10	$bash Rename_for_dDocent.sh SimRAD.barcodes
 #c#10	$ls *.fq.gz
 #10 There should now be 40 individually labeled .F.fq.gz and 40 .R.fq.gz.  Twenty from PopA and Twenty from PopB.
 #10 Now we are ready to rock!
 #11
-#11 Let's start by examining how the dDocent pipeline assembles RAD data using the program rainbow
-#11 You'll notice that no trimming or adapter cleaning is done at this point.  This is because rainbow requires sequences to be uniform in length.
-#11 Don't worry, we will still be able to remove a large amount from the data.
-#11 Let's start by pooling all the forward and reverse reads together and removing the quality scores
-#c#11	$zcat *.F.fq.gz | mawk 'BEGIN{P=1}{if(P==1||P==2){gsub(/^[@]/,">");print}; if(P==4)P=0; P++}' > forward
-#c#12	$zcat *.R.fq.gz | mawk 'BEGIN{P=1}{if(P==1||P==2){gsub(/^[@]/,">");print}; if(P==4)P=0; P++}' > reverse
+#11 Let's start by examining how the dDocent pipeline assembles RAD data.
+#11 First, we are going to create a set of uniq reads with counts for each individuals
+#c#11	$ls *.F.fq.gz > namelist
+#c#11	$sed -i'' -e 's/.F.fq.gz//g' namelist
+#c#11	$AWK1='BEGIN{P=1}{if(P==1||P==2){gsub(/^[@]/,">");print}; if(P==4)P=0; P++}'
+#c#11	$AWK2='!/>/'
+#c#11	$AWK3='!/NNN/'
+#c#11	$PERLT='while (<>) {chomp; $z{$_}++;} while(($k,$v) = each(%z)) {print "$v\t$k\n";}'
+#11
+#c#11	$cat namelist | parallel --no-notice -j 8 "zcat {}.F.fq.gz | mawk '$AWK1' | mawk '$AWK2' > {}.forward"
+#c#11	$cat namelist | parallel --no-notice -j 8 "zcat {}.R.fq.gz | mawk '$AWK1' | mawk '$AWK2' > {}.reverse"
+#c#11	$cat namelist | parallel --no-notice -j 8 "paste -d '-' {}.forward {}.reverse | mawk '$AWK3' | sed 's/-/NNNNNNNNNN/' | perl -e '$PERLT' > {}.uniq.seqs"
+#12
+#12 The first four lines simply set shell variables for various bits of AWK and perl code, 
+#12 to make parallelization with GNU-parallel easier. The first line after the variables, 
+#12 creates a set of forward reads for each individual by using mawk (a faster, c++ version of awk) 
+#12 to sort through the fastq file and strip away the quality scores.  The second line does the same for the PE reads.  
+#12 Lastly, the final line concatentates the forward and PE reads together (with 10 Ns between them) and then find the 
+#12 unique reads within that individual and counts the occurences (coverage).
+#12
+#12 Now we can take advantage of some of the properties for RAD sequencing.  
+#12 Sequences with very small levels of coverage within an individual are likely to be sequencing errors.  
+#12 So, for assembly, we can eliminate reads with low copy numbers to remove non-informative data!
+#12
+#12 Let's sum up the number the within individual coverage level of unique reads in our data set
+#c#12	$cat *.uniq.seqs > uniq.seqs
+#c#12	$for i in {2..20};
+#c#12	$do 
+#c#12	$echo $i >> pfile
+#c#12	$done
+#c#12	$cat pfile | parallel --no-notice "echo -n {}xxx && mawk -v x={} '\$1 >= x' uniq.seqs | wc -l" | mawk  '{gsub("xxx","\t",$0); print;}'| sort -g > uniqseq.data
+#c#12	$rm pfile
+#12
+#12 This is another example of a BASH for loop.  It uses mawk to query the first column and
+#12 select data above a certain copy number (from 2-20) and prints that to a file.
+#13
+#13 Take a look at the contents of uniqseq.data
+#c#13	$more uniqseq.data
+#14	We can even plot this to the terminal using gnuplot
+#c#14	$gnuplot << \EOF 
+#c#14	$set terminal dumb size 120, 30
+#c#14	$set autoscale
+#c#14	$set xrange [2:20] 
+#c#14	$unset label
+#c#14	$set title "Number of Unique Sequences with More than X Coverage (Counted within individuals)"
+#c#14	$set xlabel "Coverage"
+#c#14	$set ylabel "Number of Unique Sequences"
+#c#14	$plot 'uniqseq.data' with lines notitle
+#c#14	$pause -1
+#c#14	$EOF
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #12
 #12 This code uses mawk (a faster, c++ version of awk) to sort through the fastq file and remove only the quality scores but keep the header and
 #12 sequence
