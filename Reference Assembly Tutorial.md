@@ -19,6 +19,11 @@ Let's get started.  First let's create a working directory for yourself for the 
 ```bash
 mkdir D1W
 ```
+Let's change into that directory
+```
+cd D1W
+```
+Now let's get the test data I created for the course.
 ```
 curl -L -o data.zip https://www.dropbox.com/sh/nh2km7n2k8egmge/AABWKxCXww4BKMZIcQXV6Vxma?dl=1
 ```
