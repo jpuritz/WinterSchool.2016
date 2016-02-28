@@ -10,7 +10,7 @@ Designed by Jon Puritz
 4.	To learn how optimize a de novo reference assembly
 5.	To learn how to utilize pyRAD to assemble loci
 
-##Tutorial
+#Tutorial
 *dDocent must be properly installed for this tutorial to work*
 
 Start by downloading a small test dataset
