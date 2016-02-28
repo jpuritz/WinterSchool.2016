@@ -63,20 +63,21 @@ lane1_fakedata0_0	99	E438_L101	2	60	94M		=	106	 204	AATTCGGCTTGCAACGCAAGTGACGATT
 lane1_fakedata0_0	147	E438_L101	106	60	100M	=	2	-204	ACGACGAGCAATCCACAGACCTAGGCCCATCGAAGCGTCTTATGATTGATAACATCAGAGGGGGATGGGAGGTCCTGCTGTCGCATGGGAGAATACACCG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	NM:i:2	MD:Z:57A41C0	AS:i:94	XS:i:0
 ```
 This output is a tab delimited text file, and each column holds a specific type of data.
-Col 1	=	the name of the read
-Col 2	=	This is a bitwise flag that describes the alignment.  The flag 99 means that this is the first read in a read pair, that this read is paired, is paired in a proper pair, and that it's mate is mapped on the one the reverse strand.
-				These bitwise flags can be difficult to interpret with out help.  Checkout this website for a translator (http://broadinstitute.github.io/picard/explain-flags.html).  Go to the website and translate what flag 147 means. 
-Col 3	=	The name of the reference sequence/contig that the read has mapped to.
-Col 4	=	The position of the left most base of the read on the reference sequence.  All the reference sequences in our example have a leading N, so 2 means it aligned to the beginning of the reference.
-Col 5	=	This is the map quality score.  It equals −10 log10 Pr{mapping position is wrong}, rounded to the nearest integer.  This is identical to a PHRED score, so a score of 60 means that there is a 0.000001 chance that the mapping is wrong.
-Col 6	=	The CIGAR string.  That's the Compact Idiosyncratic Gapped Alignment Report.  It's a single string of text that describe how the sequence aligns, including matches (M), insertions (I), deletions (D), mismatch (X), soft clipping (S), and hard clipping (H), etc.
-				94M translates to 94 matching basepairs starting from the left most position (reported in Col 4).
-Col 7	=	The name of the reference sequence the read's mate maps to.  The equal sign here means the both map to the same reference contig.
-Col 8	=	The alignment position of the read's mate
-Col 9	=	The observed length of the total alignment.  If both reads map to the same contig it equals the number of bases from the leftmost mapped base to the rightmost mapped base.
-				The leftmost segment has a plus sign and the rightmost has a minus sign.
-Col 10	=	The sequence of the read
-Col 11	=	The ASCII quality score for each basepair in the read.
+
+*Col 1	=	the name of the read
+*Col 2	=	This is a bitwise flag that describes the alignment.  The flag 99 means that this is the first read in a read pair, that this read is paired, is paired in a proper pair, and that it's mate is mapped on the one the reverse strand.
+*				These bitwise flags can be difficult to interpret with out help.  Checkout this website for a translator (http://broadinstitute.github.io/picard/explain-flags.html).  Go to the website and translate what flag 147 means. 
+*Col 3	=	The name of the reference sequence/contig that the read has mapped to.
+*Col 4	=	The position of the left most base of the read on the reference sequence.  All the reference sequences in our example have a leading N, so 2 means it aligned to the beginning of the reference.
+*Col 5	=	This is the map quality score.  It equals −10 log10 Pr{mapping position is wrong}, rounded to the nearest integer.  This is identical to a PHRED score, so a score of 60 means that there is a 0.000001 chance that the mapping is wrong.
+*Col 6	=	The CIGAR string.  That's the Compact Idiosyncratic Gapped Alignment Report.  It's a single string of text that describe how the sequence aligns, including matches (M), insertions (I), deletions (D), mismatch (X), soft clipping (S), and hard clipping (H), etc.
+*				94M translates to 94 matching basepairs starting from the left most position (reported in Col 4).
+*Col 7	=	The name of the reference sequence the read's mate maps to.  The equal sign here means the both map to the same reference contig.
+*Col 8	=	The alignment position of the read's mate
+*Col 9	=	The observed length of the total alignment.  If both reads map to the same contig it equals the number of bases from the leftmost mapped base to the rightmost mapped base.
+*				The leftmost segment has a plus sign and the rightmost has a minus sign.
+*Col 10	=	The sequence of the read
+*Col 11	=	The ASCII quality score for each basepair in the read.
 
 This info is important to know and can be helpful for quick filtering.  However, going through an entire alignment in assessment would be tedious. 
 In addition, all this data uses up a lot of disk space.  To remedy this, SAM files are often (and should be) converted into Binary Alignment Mao (BAM) Files.
