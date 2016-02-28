@@ -1,0 +1,344 @@
+###NTU NGS Workshop Mapping Exercise###
+###Designed by Jon Puritz###
+
+###GOALS###
+##	1.  To learn how to map reads using the MEM algorithm of BWA
+##	2.	To learn about the SAM/BAM file format 
+##	3.	To learn how to use SAMtools to manipulate and view SAM/BAM files
+##	4.	To learn how optimize read mappings by examining alignment statistics
+##	5.	BONUS GOAL- learn how to use sam-stats from ea-utils.
+###########
+
+
+#1 Let's find our way back to your original working directory
+#1 The code on the next line needs to be edited to work properly
+#1 Put in your group's name and your user name
+#c#1	$cd ~/GROUP_NAME/USER/D1W
+#2 We are going to use the program BWA to learn about read mapping.  Specifically, we are going to be working with the
+#2 MEM algorithm of the program.  BWA-MEM is a fast, customizable, and accurate read mapping software.  Look at comparisons in
+#2 (http://arxiv.org/pdf/1303.3997.pdf) and (http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0090581).  
+#2 Let's take a look at bwa mem using some of our simulated data.
+#2 First, let's make sure we all use the same reference.
+#c#2	$bash remake_reference.sh 4 4 0.90 PE 2
+#2 This should return a reference of 1000 sequences.
+#3 First thing we need to do is to index the reference.fasta file, so that bwa search against it more quickly.
+#c#3	$bwa index reference.fasta
+#4 Now, let's align one of the samples to the reference, as simply as possible.  This means calling bwa mem and feeding it the reference and reads files
+#c#4	$bwa mem reference.fasta PopA_01.F.fq.gz PopA_01.R.fq.gz > PopA_01.sam
+#4 We saved the output in the file PopA_01.sam.  A Sequence Alignment Map or SAM file is the expanded the standard output for most mapping software.
+#4 A lot of information is stored in a SAM file.  We won't be able to cover it all today, so please be sure to read through the official description
+#4 (http://samtools.github.io/hts-specs/SAMv1.pdf).
+#5
+#5 Let's take a look at the SAM file we generated.
+#c#5	$head PopA_01.sam
+#5	@SQ	SN:E1_L100	LN:206
+#5	@SQ	SN:E2_L100	LN:206
+#5	@SQ	SN:E3_L100	LN:206
+#5	@SQ	SN:E4_L100	LN:206
+#5	@SQ	SN:E5_L100	LN:206
+#5	@SQ	SN:E6_L100	LN:206
+#5	@SQ	SN:E7_L100	LN:206
+#5	@SQ	SN:E8_L100	LN:206
+#5	@SQ	SN:E9_L100	LN:206
+#5	@SQ	SN:E10_L101	LN:207
+#5
+#5 This is the header section of the SAM file.  Each line begins with an @ and lists the referenece sequence name (SN:) and its length (LN:206).
+#6 The bulk of the data in a SAM file is in the alignment section though.  To see that, let's look at the first two lines that do not start with the @ character.
+#c#6	$mawk '!/@/' PopA_01.sam	| head -2
+#6
+#6 lane1_fakedata0_0	99	E438_L101	2	60	94M		=	106	 204	AATTCGGCTTGCAACGCAAGTGACGATTCCCACGGACATAACTGATCTAAGTAACTTCCAAATCTGGGAATGGGATTTCATAATTAAGGACTAT	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBNM:i:0	MD:Z:94	AS:i:94	XS:i:0
+#6 lane1_fakedata0_0	147	E438_L101	106	60	100M	=	2	-204	ACGACGAGCAATCCACAGACCTAGGCCCATCGAAGCGTCTTATGATTGATAACATCAGAGGGGGATGGGAGGTCCTGCTGTCGCATGGGAGAATACACCG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	NM:i:2	MD:Z:57A41C0	AS:i:94	XS:i:0
+#6 
+#6 This output is a tab delimited text file, and each column holds a specific type of data.
+#6 Col 1	=	the name of the read
+#6 Col 2	=	This is a bitwise flag that describes the alignment.  The flag 99 means that this is the first read in a read pair, that this read is paired, is paired in a proper pair, and that it's mate is mapped on the one the reverse strand.
+#6 				These bitwise flags can be difficult to interpret with out help.  Checkout this website for a translator (http://broadinstitute.github.io/picard/explain-flags.html).  Go to the website and translate what flag 147 means. 
+#6 Col 3	=	The name of the reference sequence/contig that the read has mapped to.
+#6 Col 4	=	The position of the left most base of the read on the reference sequence.  All the reference sequences in our example have a leading N, so 2 means it aligned to the beginning of the reference.
+#6 Col 5	=	This is the map quality score.  It equals −10 log10 Pr{mapping position is wrong}, rounded to the nearest integer.  This is identical to a PHRED score, so a score of 60 means that there is a 0.000001 chance that the mapping is wrong.
+#6 Col 6	=	The CIGAR string.  That's the Compact Idiosyncratic Gapped Alignment Report.  It's a single string of text that describe how the sequence aligns, including matches (M), insertions (I), deletions (D), mismatch (X), soft clipping (S), and hard clipping (H), etc.
+#6 				94M translates to 94 matching basepairs starting from the left most position (reported in Col 4).
+#6 Col 7	=	The name of the reference sequence the read's mate maps to.  The equal sign here means the both map to the same reference contig.
+#6 Col 8	=	The alignment position of the read's mate
+#6 Col 9	=	The observed length of the total alignment.  If both reads map to the same contig it equals the number of bases from the leftmost mapped base to the rightmost mapped base.
+#6 				The leftmost segment has a plus sign and the rightmost has a minus sign.
+#6 Col 10	=	The sequence of the read
+#6 Col 11	=	The ASCII quality score for each basepair in the read.
+#7 
+#7 This info is important to know and can be helpful for quick filtering.  However, going through an entire alignment in assessment would be tedious. 
+#7 In addition, all this data uses up a lot of disk space.  To remedy this, SAM files are often (and should be) converted into Binary Alignment Mao (BAM) Files.
+#7 The program SAMtools can be used to convert between the two formats.  SAMtools can also view, manipulate, and output statistics about SAM/BAM files.  Below, we are going to use it to examine 
+#7 the effect of different mapping parameters.  Let's use SAMtools to evaluate our mapping.  
+#c#7	$samtools view -Sbt reference.fasta PopA_01.sam | samtools flagstat -
+#7
+#7 [bam_header_read] EOF marker is absent. The input is probably truncated.
+#7 [samopen] SAM header is present: 1000 sequences.
+#7 37540 + 0 in total (QC-passed reads + QC-failed reads)
+#7 0 + 0 duplicates
+#7 36935 + 0 mapped (98.39%:-nan%)
+#7 37540 + 0 paired in sequencing
+#7 18770 + 0 read1
+#7 18770 + 0 read2
+#7 25248 + 0 properly paired (67.26%:-nan%)
+#7 36670 + 0 with itself and mate mapped
+#7 265 + 0 singletons (0.71%:-nan%)
+#7 0 + 0 with mate mapped to a different chr
+#7 0 + 0 with mate mapped to a different chr (mapQ>=5)
+#8 
+#8 The above code is converting our SAM file to a BAM file and piping it directly back to SAMtools to generate the stats you see.  The first two lines are errors from the piping, but don't affect the data.
+#8 Most of the above stats are self-explanatory, but let's key on a few of them.
+#8 The first line shows the total number of reads and line 3 shows how many of them mapped (and what percentage).  
+#8 You can also see that 0.71% of the mappings were singletons (only one read from a pair) and no reads had mates mapped to different reference contigs.
+#8 The last important figure is the number of reads (and percentage) that are properly paired.  Proper pairings are determined by the aligning software.
+#8 In general, the reads must be mated to the same reference contig, in the proper orientation, with high mapping quality, and have fragment size that meets expectations (usually based on the mean and SD of all mappings).
+#8 You can see that just with the defaults, the mapping performed very well.  Most of the reads mapped with no discordant mate mappings.  The one seemingly odd number is the low percentage of proper pairings.
+#8 Why might this be the case?
+#9 
+#9 To remedy the problem, we can add a few extra parameters to our bwa code.  Basically, setting the limits for the proper insert size distribution.
+#c#9	$bwa mem reference.fasta PopA_01.F.fq.gz PopA_01.R.fq.gz -I 200,40 2>/dev/null | samtools view -SbT reference.fasta - | samtools flagstat -
+#9
+#9	37540 + 0 in total (QC-passed reads + QC-failed reads)
+#9	0 + 0 duplicates
+#9	37200 + 0 mapped (99.09%:-nan%)
+#9	37540 + 0 paired in sequencing
+#9	18770 + 0 read1
+#9	18770 + 0 read2
+#9	37200 + 0 properly paired (99.09%:-nan%)
+#9	37200 + 0 with itself and mate mapped
+#9	0 + 0 singletons (0.00%:-nan%)
+#9	0 + 0 with mate mapped to a different chr
+#9	0 + 0 with mate mapped to a different chr (mapQ>=5)
+#9
+#9	The -I parameter sets the insert size at 200 and the standard deviation at 40.  Now the proper pairings jump up to 99.09% or all of the mapped reads.
+#10
+#10	There are still a very small percentage of reads that haven't mapped.  One way to optimize this is to change the scoring of alignments.
+#10	In short, alignments are scored by multiplying the number of matching bases by a match score (default 1), then the number of mismatching bases are multiplied
+#10 by a mismatch penalt (default 4) and subtracted from the match score.  Next any gaps are penalized by a single gap opening penalty (default 6) and a gap extension penalty (default 1) multiplied the length of the gap.
+#10	The easiest way to make the alignment a little more liberal is to just decrease the mismatch and gap opening penalties by 1.
+#c#10	$bwa mem reference.fasta PopA_01.F.fq.gz PopA_01.R.fq.gz -I 200,40 -B 3 -O 5 2>/dev/null | samtools view -SbT reference.fasta - | samtools flagstat -
+#10 37540 + 0 in total (QC-passed reads + QC-failed reads)
+#10 0 + 0 duplicates
+#10 37200 + 0 mapped (99.09%:-nan%)
+#10 37540 + 0 paired in sequencing
+#10 18770 + 0 read1
+#10 18770 + 0 read2
+#10 37200 + 0 properly paired (99.09%:-nan%)
+#10 37200 + 0 with itself and mate mapped
+#10 0 + 0 singletons (0.00%:-nan%)
+#10 0 + 0 with mate mapped to a different chr
+#10 0 + 0 with mate mapped to a different chr (mapQ>=5)
+#11	
+#11	Well, that didn't change anything.  These might be reads that don't match to any reference contig.  We can use mawk to quickly examine some of the reads.
+#c#11	$bwa mem reference.fasta PopA_01.F.fq.gz PopA_01.R.fq.gz -I 200,40 -B 3 -O 5 2>/dev/null |  mawk '/\*/' | head
+#11	lane1_fakedata52_0	77	*	0	0	*	*	0	0	AATTCCACCGTGAGCATAGTGCTCGTACCTGCCGCGAACTCTCCAACCACATAGCGGCCGGGAGGAGAAAGGTACTGTGAGAGGCGACGAGCGC	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0XS:i:0
+#11	lane1_fakedata52_0	141	*	0	0	*	*	0	0	CGGACACCAATACAGGCGCATTATATTCGGATCCCCAGCTTAACGATCATCCTCCAGAGCCGTCATCTTCATTAATTAATGTCCCGCGGAGTTGGGCATG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
+#11	lane1_fakedata52_1	77	*	0	0	*	*	0	0	AATTCCACCGTGAGCATAGTGCTCGTACCTGCCGCGAACTCTCCAACCACATAGCGGCCGGGAGGAGAAAGGTACTGTGAGAGGCGACGAGCGC	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0XS:i:0
+#11	lane1_fakedata52_1	141	*	0	0	*	*	0	0	CGGACACCAATACAGGCGCATTATATTCGGATCCCCAGCTTAACGATCATCCTCCAGAGCCGTCATCTTCATTAATTAATGTCCCGCGGAGTTGGGCATG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
+#11	lane1_fakedata52_2	77	*	0	0	*	*	0	0	AATTCCACCGTGAGCATAGTGCTCGTACCTGCCGCGAACTCTCCAACCACATAGCGGCCGGGAGGAGAAAGGTACTGTGAGAGGCGACGAGCGC	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0XS:i:0
+#11	lane1_fakedata52_2	141	*	0	0	*	*	0	0	CGGACACCAATACAGGCGCATTATATTCGGATCCCCAGCTTAACGATCATCCTCCAGAGCCGTCATCTTCATTAATTAATGTCCCGCGGAGTTGGGCATG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
+#11	lane1_fakedata52_3	77	*	0	0	*	*	0	0	AATTCCACCGTGAGCATAGTGCTCGTACCTGCCGCGAACTCTCCAACCACATAGCGGCCGGGAGGAGAAAGGTACTGTGAGAGGCGACGAGCGC	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0XS:i:0
+#11	lane1_fakedata52_3	141	*	0	0	*	*	0	0	CGGACACCAATACAGGCGCATTATATTCGGATCCCCAGCTTAACGATCATCCTCCAGAGCCGTCATCTTCATTAATTAATGTCCCGCGGAGTTGGGCATG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
+#11	lane1_fakedata52_4	77	*	0	0	*	*	0	0	AATTCCACCGTGAGCATAGTGCTCGTACCTGCCGCGAACTCTCCAACCACATAGCGGCCGGGAGGAGAAAGGTACTGTGAGAGGCGACGAGCGC	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0XS:i:0
+#11	lane1_fakedata52_4	141	*	0	0	*	*	0	0	CGGACACCAATACAGGCGCATTATATTCGGATCCCCAGCTTAACGATCATCCTCCAGAGCCGTCATCTTCATTAATTAATGTCCCGCGGAGTTGGGCATG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
+#11
+#11	Here, you can see that neither the forward or reverse reads in these pairs mapped to any contig.  This likely means that our reference is not entirely correct.  It might have the right number of loci, but not the correct loci.  However, 99.01% is not too shabby.
+#12
+#12	To get a better idea of how to optimize mapping further, let's take a look at some real (messy) data.
+#c#12	$mkdir realdata
+#c#12	$cd realdata
+#c#12	$ln -s ~/COURSE_DATA/BR_021.R*.fq.gz .
+#c#12	$ln -s ~/COURSE_DATA/reference.fasta* .
+#c#12	$bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 2>/dev/null | samtools view -@3 -q 1 -SbT reference.fasta - | samtools flagstat -
+#12	1801059 + 0 in total (QC-passed reads + QC-failed reads)
+#12	0 + 0 duplicates
+#12	1801059 + 0 mapped (100.00%:-nan%)
+#12	1801059 + 0 paired in sequencing
+#12	910738 + 0 read1
+#12	890321 + 0 read2
+#12	1755574 + 0 properly paired (97.47%:-nan%)
+#12	1774166 + 0 with itself and mate mapped
+#12	26893 + 0 singletons (1.49%:-nan%)
+#12	18152 + 0 with mate mapped to a different chr
+#12	17255 + 0 with mate mapped to a different chr (mapQ>=5)
+#12
+#12	If you're paying attention, you would have noticed that I added another parameter to the bwa mem command (-t).  This sets the number of processors to use.  This file is much larger.  I also added -@ and -q parameters to samtools
+#12	The -q 1 removes reads with 0 probability of mapping from being retained in the file and -@16 adds multithreading.  
+#13
+#13	Now, we have a baseline to work with for this individual.  Let's try to optimize it.  First, let's relax the mismatch and gap opening penalties.
+#c#13	$bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 2>/dev/null | samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat -
+#13	1803670 + 0 in total (QC-passed reads + QC-failed reads)
+#13	0 + 0 duplicates
+#13	1803670 + 0 mapped (100.00%:-nan%)
+#13	1803670 + 0 paired in sequencing
+#13	911530 + 0 read1
+#13	892140 + 0 read2
+#13	1758193 + 0 properly paired (97.48%:-nan%)
+#13	1777652 + 0 with itself and mate mapped
+#13	26018 + 0 singletons (1.44%:-nan%)
+#13	19131 + 0 with mate mapped to a different chr
+#13	17882 + 0 with mate mapped to a different chr (mapQ>=5)
+#13
+#13	So, we've improved things somewhat.  We've mapped more reads, increased the proper pairings, decreased our singletons, but also have mapped more reads with discordant mates.
+#13	This discordant mappings, however, make up a very small percentage of the total mappings, around 1.5%.  Previously, it was 1.46%.  This probably is a good stopping point for
+#13 trying to increase the number of mappings.  The more we add at this point, the worse they are going to be.  Let's take some steps to reduce bad mappings.
+#14
+#14	We can add an additional flag to bwa that specifically aids with RAD mappings.  RADseqs tend to be more conserved at the 5' end simply because of the cut site.  In general, if the
+#14	beginning of a read needs to be trimmed off to match (especially after going through quality filtering), it most likely is not homologous to that locus and should be removed.
+#c#14	$bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 -L 20,5 2>/dev/null | samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat -
+#14	1803638 + 0 in total (QC-passed reads + QC-failed reads))
+#14	0 + 0 duplicates
+#14	1803638 + 0 mapped (100.00%:-nan%)
+#14	1803638 + 0 paired in sequencing
+#14	911432 + 0 read1
+#14	892206 + 0 read2
+#14	1758502 + 0 properly paired (97.50%:-nan%)
+#14	1777691 + 0 with itself and mate mapped
+#14	25947 + 0 singletons (1.44%:-nan%)
+#14	18814 + 0 with mate mapped to a different chr
+#14	17567 + 0 with mate mapped to a different chr (mapQ>=5)
+#14	
+#14 The improvement is slight but noticeable.  More reads are properly paired and there are less singletons and discordant mappings!
+#15	
+#15	We can take this a step further by also filtering out reads that have a significant amount of clipping.  
+#15	Can you think of a way how to do this?
+#15
+#15	Remember that while the alignment is in SAM format, column 6 contains the CIGAR string.  If the read has been clipped at all (hard or soft), there will be an S or H
+#15	character proceed by a number (the number of bases clipped).  So, we can use awk to filter via a regular expression to remove reads with significant clipping (for example more than 10 bases).
+#c#15	$bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -q 1 -@16 -SbT reference.fasta - | samtools flagstat -
+#15		
+#15	1776476 + 0 in total (QC-passed reads + QC-failed reads)
+#15	0 + 0 duplicates
+#15	1776476 + 0 mapped (100.00%:-nan%)
+#15	1776476 + 0 paired in sequencing
+#15	901278 + 0 read1
+#15	875198 + 0 read2
+#15	1740835 + 0 properly paired (97.99%:-nan%)
+#15	1754849 + 0 with itself and mate mapped
+#15	21627 + 0 singletons (1.22%:-nan%)
+#15	13407 + 0 with mate mapped to a different chr
+#15	12684 + 0 with mate mapped to a different chr (mapQ>=5)
+#15
+#15	While this step definitely decreased the overall mappings by a small percentage it increased our properly paired percentage and decreased the singleton and discordant mappings.  
+#16 
+#16 Let's try un relaxing the mapping parameters and compare the results with the previous
+#c#16	$bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat - > relaxed.stats
+#c#16	$bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat - > normal.stats
+#c#16	$paste <(cut -f1 -d + relaxed.stats) <(cut -f1 -d + normal.stats) <(cut -f4-10 -d " " relaxed.stats) 
+#16	1776476 	1770763 	in total (QC-passed reads + QC-failed reads)
+#16	0 			0 			duplicates
+#16	1776476 	1770763 	mapped (100.00%:-nan%)
+#16	1776476 	1770763 	paired in sequencing
+#16	901278 		899182 		read1
+#16	875198 		871581 		read2
+#16	1740835 	1734941 	properly paired (97.99%:-nan%)
+#16	1754849 	1748324 	with itself and mate mapped
+#16	21627 		22439 		singletons (1.22%:-nan%)
+#16	13407 		12772 		with mate mapped to a different chr
+#16	12684 		12306 		with mate mapped to a different chr
+#16	
+#16	I cheated and added extra tabs to make the table better.  We can see that the relaxed stats lead to more mappings, more proper pairings, and less singletons.
+#16	The only drawback to the more relaxed mappings is that there are more discordant mapping pairs.  These extra discordant mappings may be of very low quality and
+#17
+#17	Now on your own, try repeating #c#16 but with a mapping quality cutoff of 5 and 10.  Does the same pattern hold true?
+#17	Your results should look like this:
+#17	1773055 	1768522 	in total (QC-passed reads + QC-failed reads)
+#17	0 			0 			duplicates
+#17	1773055 	1768522 	mapped (100.00%:-nan%)
+#17	1773055 	1768522 	paired in sequencing
+#17	899448 		898211 		read1
+#17	873607 		870311 		read2
+#17	1738784 	1733532 	properly paired (98.07%:-nan%)
+#17	1752052 	1746425 	with itself and mate mapped
+#17	21003 		22097 		singletons (1.18%:-nan%)
+#17	12684 		12306 		with mate mapped to a different chr
+#17	12684 		12306 		with mate mapped to a different chr
+#17	
+#17	1768505 	1764900 	in total (QC-passed reads + QC-failed reads))
+#17	0 			0 			duplicates
+#17	1768505 	1764900 	mapped (100.00%:-nan%)
+#17	1768505 	1764900 	paired in sequencing
+#17	896815 		896363 		read1
+#17	871690 		868537 		read2
+#17	1737170 	1731639 	properly paired (98.23%:-nan%)
+#17	1748381 	1743459 	with itself and mate mapped
+#17	20124 		21441 		singletons (1.14%:-nan%)
+#17	10699 		11304 		with mate mapped to a different chr
+#17	10699 		11304 		with mate mapped to a different chr
+#17	
+#17 The benefit of relaxing the mapping parameters is even more pronounced at higher mapping qualities.
+#17	This looks like an optimized mapping setting for this sample.
+#17	Remember that you should trying using multiple samples from your data set before picking final mapping parameters
+#18	
+#18	Bonus Material
+#18	Here are some other things you can try if you have extra time.
+#18
+#18	Another program from the ea-utils suite called sam-stats can be helpful to evaluate alignments as well.
+#18 You can quickly download and install it with the following commands:	
+#c#18	$curl -O https://ea-utils.googlecode.com/files/ea-utils.1.1.2-537.tar.gz
+#c#18	$tar xvzf ea-utils.1.1.2-537.tar.gz
+#c#18	$cd ea-utils.1.1.2-537
+#c#18	$make
+#c#18	$cp sam-stats ~/programs
+#c#18	$cd ..
+#c#18	$rm -rf ea-utils.1.1.2-537*
+#19	You can pipe results to this program, just like samtools, so you don't need to waste time writing files while optimizing.
+#19	Here is an example from one of our exercises above:
+#c#19	$bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -q 1 -@16 -SbT reference.fasta - |  sam-stats -D -B 
+#19	reads	1776476
+#19	version	1.34.488
+#19	mapped reads	177647643
+#19	mapped bases	17189970725
+#19	library	paired-end
+#19	discordant mates4109
+#19	pct forward	99.712
+#19	phred	33
+#19	forward	1771351
+#19	reverse	5125
+#19	len max	101
+#19	len mean	96.7644
+#19	len stdev	6.9337
+#19	mapq mean	58.8918
+#19	mapq stdev	5.6485
+#19	mapq Q1	60.00
+#19	mapq median	60.00
+#19	mapq Q3	60.00
+#19	snp rate	0.01354
+#19	ins rate	0.00111
+#19	del rate	0.00196
+#19	pct mismatch	56.303767
+#19	insert mean	206.622
+#19	insert stdev	0.48487
+#19	insert Q1	206.00
+#19	insert median	207.000
+#19	insert Q3	207.00
+#19	base qual mean	36.533935
+#19	base qual stdev	4.89766
+#19	%A	28.0062
+#19	%C	22.8043
+#19	%G	21.1156
+#19	%T	28.0707
+#19	%N	0.0032
+#19	num ref seqs	30926
+#19	num ref aligned	25025
+#19	The useful info that sam-stats reports that SAMtools doesn't is the number (and percentage) of ambiguous mappings (none in this case), and the number of reference sequences that the reads aligned to.  These can both be helpful for determining optimal mapping parameters.
+#19	Ideally, you would like to maximize the number of reference sequences mapped to and minimize the number of ambiguous mappings.  
+
+#!/bin/bash
+if which MapEx &>/dev/null; then
+    LOC=$(which MapEx)
+else
+	LOC="./MapEx"
+fi
+if [[ -z "$1" ]]; then
+grep "^##" $LOC | mawk '!/grep/'
+else
+PATTERN=#$1[[:blank:]]
+grep "$PATTERN" $LOC | awk '{$1=""; print $0}'
+fi
+
+
+
+
+
+
+
