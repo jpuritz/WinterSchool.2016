@@ -55,7 +55,8 @@ head PopA_01.sam
 ```
 This is the header section of the SAM file.  Each line begins with an @ and lists the referenece sequence name (SN:) and its length (LN:206).
 The bulk of the data in a SAM file is in the alignment section though.  To see that, let's look at the first two lines that do not start with the @ character.
-```bash	mawk '!/@/' PopA_01.sam	| head -2
+```bash	
+mawk '!/@/' PopA_01.sam	| head -2
 ```
 ```
 lane1_fakedata0_0	99	E438_L101	2	60	94M		=	106	 204	AATTCGGCTTGCAACGCAAGTGACGATTCCCACGGACATAACTGATCTAAGTAACTTCCAAATCTGGGAATGGGATTTCATAATTAAGGACTAT	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBNM:i:0	MD:Z:94	AS:i:94	XS:i:0
@@ -82,7 +83,8 @@ In addition, all this data uses up a lot of disk space.  To remedy this, SAM fil
 The program SAMtools can be used to convert between the two formats.  SAMtools can also view, manipulate, and output statistics about SAM/BAM files.  Below, we are going to use it to examine 
 the effect of different mapping parameters.  Let's use SAMtools to evaluate our mapping.  
 ```bash	samtools view -Sbt reference.fasta PopA_01.sam | samtools flagstat -
-
+```
+```
 [bam_header_read] EOF marker is absent. The input is probably truncated.
 [samopen] SAM header is present: 1000 sequences.
 37540 + 0 in total (QC-passed reads + QC-failed reads)
@@ -96,7 +98,7 @@ the effect of different mapping parameters.  Let's use SAMtools to evaluate our 
 265 + 0 singletons (0.71%:-nan%)
 0 + 0 with mate mapped to a different chr
 0 + 0 with mate mapped to a different chr (mapQ>=5)
-
+```
 The above code is converting our SAM file to a BAM file and piping it directly back to SAMtools to generate the stats you see.  The first two lines are errors from the piping, but don't affect the data.
 Most of the above stats are self-explanatory, but let's key on a few of them.
 The first line shows the total number of reads and line 3 shows how many of them mapped (and what percentage).  
@@ -107,8 +109,10 @@ You can see that just with the defaults, the mapping performed very well.  Most 
 Why might this be the case?
 
 To remedy the problem, we can add a few extra parameters to our bwa code.  Basically, setting the limits for the proper insert size distribution.
-```bash	bwa mem reference.fasta PopA_01.F.fq.gz PopA_01.R.fq.gz -I 200,40 2>/dev/null | samtools view -SbT reference.fasta - | samtools flagstat -
-
+```bash	
+bwa mem reference.fasta PopA_01.F.fq.gz PopA_01.R.fq.gz -I 200,40 2>/dev/null | samtools view -SbT reference.fasta - | samtools flagstat -
+```
+```
 	37540 + 0 in total (QC-passed reads + QC-failed reads)
 	0 + 0 duplicates
 	37200 + 0 mapped (99.09%:-nan%)
@@ -120,7 +124,7 @@ To remedy the problem, we can add a few extra parameters to our bwa code.  Basic
 	0 + 0 singletons (0.00%:-nan%)
 	0 + 0 with mate mapped to a different chr
 	0 + 0 with mate mapped to a different chr (mapQ>=5)
-
+```
 	The -I parameter sets the insert size at 200 and the standard deviation at 40.  Now the proper pairings jump up to 99.09% or all of the mapped reads.
 
 	There are still a very small percentage of reads that haven't mapped.  One way to optimize this is to change the scoring of alignments.
