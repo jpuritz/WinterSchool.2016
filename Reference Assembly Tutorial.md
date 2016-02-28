@@ -4,13 +4,11 @@ Designed by Jon Puritz
 **NOTE: You can download the RefTut file from the depository and run this tutorial from the command line**
 
 #GOALS
-1. To demultiplex samples with process_radtags and rename samples 
-2. To use the methods of dDocent (via rainbow) to assemble reference contigs
-3. To learn how optimize a de novo reference assembly
-
-#Tutorial
-*dDocent must be properly installed for this tutorial to work*
-
+1.	To set up test data for our exercise
+2.	To demultiplex samples with process_radtags and rename samples 
+3.	To use the methods of dDocent (via rainbow) to assemble reference contigs
+4.	To learn how optimize a de novo reference assembly
+5.	To learn how to utilize pyRAD to assemble loci
 
 ##Tutorial
 *dDocent must be properly installed for this tutorial to work*
