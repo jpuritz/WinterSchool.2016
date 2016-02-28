@@ -10,16 +10,15 @@
 ###########
 
 
-#1 Let's find our way back to your original working directory
-#1 The code on the next line needs to be edited to work properly
-#1 Put in your group's name and your user name
+#1 Let's find our way back to your original working directory and make sure the dDocent module is loaded
 #c#1	$cd ~/D1W
+#c#1	$module load dDocent/v2.18 
 #2 We are going to use the program BWA to learn about read mapping.  Specifically, we are going to be working with the
 #2 MEM algorithm of the program.  BWA-MEM is a fast, customizable, and accurate read mapping software.  Look at comparisons in
 #2 (http://arxiv.org/pdf/1303.3997.pdf) and (http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0090581).  
 #2 Let's take a look at bwa mem using some of our simulated data.
 #2 First, let's make sure we all use the same reference.
-#c#2	$bash remake_reference.sh 4 4 0.90 PE 2
+#c#2	$bash remake_reference.sh 4 4 0.90 PE 8
 #2 This should return a reference of 1000 sequences.
 #3 First thing we need to do is to index the reference.fasta file, so that bwa search against it more quickly.
 #c#3	$bwa index reference.fasta
