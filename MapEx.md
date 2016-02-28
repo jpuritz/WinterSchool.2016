@@ -186,7 +186,7 @@ bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 2>/dev/nu
 26893 + 0 singletons (1.49%:-nan%)
 18152 + 0 with mate mapped to a different chr
 17255 + 0 with mate mapped to a different chr (mapQ>=5)
-
+```
 If you're paying attention, you would have noticed that I added another parameter to the bwa mem command (-t).  This sets the number of processors to use.  This file is much larger.  I also added -@ and -q parameters to samtools
 The -q 1 removes reads with 0 probability of mapping from being retained in the file and -@16 adds multithreading.  
 
@@ -237,6 +237,7 @@ character proceed by a number (the number of bases clipped).  So, we can use awk
 ```bash
 bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -q 1 -@16 -SbT reference.fasta - | samtools flagstat -
 ``` 
+```
 1776476 + 0 in total (QC-passed reads + QC-failed reads)
 0 + 0 duplicates
 1776476 + 0 mapped (100.00%:-nan%)
@@ -248,7 +249,7 @@ bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5
 21627 + 0 singletons (1.22%:-nan%)
 13407 + 0 with mate mapped to a different chr
 12684 + 0 with mate mapped to a different chr (mapQ>=5)
-
+```
 While this step definitely decreased the overall mappings by a small percentage it increased our properly paired percentage and decreased the singleton and discordant mappings.  
 
 Let's try un relaxing the mapping parameters and compare the results with the previous
