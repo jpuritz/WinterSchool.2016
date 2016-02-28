@@ -1,8 +1,8 @@
-###NTU NGS Workshop Mapping Exercise###
+###B@G 2016 Mapping Exercise###
 ###Designed by Jon Puritz###
 
 ###GOALS###
-##	1.  To learn how to map reads using the MEM algorithm of BWA
+##	1.	To learn how to map reads using the MEM algorithm of BWA
 ##	2.	To learn about the SAM/BAM file format 
 ##	3.	To learn how to use SAMtools to manipulate and view SAM/BAM files
 ##	4.	To learn how optimize read mappings by examining alignment statistics
@@ -13,7 +13,7 @@
 #1 Let's find our way back to your original working directory
 #1 The code on the next line needs to be edited to work properly
 #1 Put in your group's name and your user name
-#c#1	$cd ~/GROUP_NAME/USER/D1W
+#c#1	$cd ~/D1W
 #2 We are going to use the program BWA to learn about read mapping.  Specifically, we are going to be working with the
 #2 MEM algorithm of the program.  BWA-MEM is a fast, customizable, and accurate read mapping software.  Look at comparisons in
 #2 (http://arxiv.org/pdf/1303.3997.pdf) and (http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0090581).  
