@@ -194,6 +194,7 @@ Now, we have a baseline to work with for this individual.  Let's try to optimize
 ```bash
 bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 2>/dev/null | samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat -
 ```
+```
 1803670 + 0 in total (QC-passed reads + QC-failed reads)
 0 + 0 duplicates
 1803670 + 0 mapped (100.00%:-nan%)
