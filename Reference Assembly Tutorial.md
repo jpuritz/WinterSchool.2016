@@ -13,7 +13,12 @@ Designed by Jon Puritz
 #Tutorial
 *dDocent must be properly installed for this tutorial to work*
 
-Start by downloading a small test dataset
+Welcome to the first exercise of B@G 2016!!
+
+Let's get started.  First let's create a working directory for yourself for the Day 1 workshop
+```bash
+mkdir D1W
+```
 ```
 curl -L -o data.zip https://www.dropbox.com/sh/nh2km7n2k8egmge/AABWKxCXww4BKMZIcQXV6Vxma?dl=1
 ```
