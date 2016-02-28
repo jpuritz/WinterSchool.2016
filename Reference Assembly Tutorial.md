@@ -19,9 +19,10 @@ Let's get started.  First let's create a working directory for yourself for the 
 ```bash
 mkdir D1W
 ```
-Let's change into that directory
+Let's change into that directory and load the dDocent2.18 module
 ```
 cd D1W
+module load dDocent/v2.18
 ```
 Now let's get the test data I created for the course.
 ```
@@ -276,7 +277,7 @@ Let's try 4.
 mawk -v x=4 '$1 >= x' uniqCperindv > uniq.k.4.c.4.seqs
 wc -l uniq.k.4.c.4.seqs
 ```
-No we have reduced the data down to only 3840 sequences!
+Now we have reduced the data down to only 3840 sequences!
 
 Let's quickly convert these sequences back into fasta format
 We can do this with two quick lines of code:
@@ -334,7 +335,7 @@ rainbow div -i rcluster -o rbdiv.out
 The output of the div process is similar to the previous output with the exception that the second column is now the new divided cluster_ID
 (this value is numbered sequentially) and there was a column added to the end of the file that holds the original first cluster ID
 The parameter -f can be set to control what is the minimum frequency of an allele necessary to divide it into its own cluster
-Since this is pooled data, we want to lower this from the default of 0.2.
+Since this is from multiple individuals, we want to lower this from the default of 0.2.
 ```
 rainbow div -i rcluster -o rbdiv.out -f 0.5 -K 10
 ```
@@ -401,7 +402,6 @@ curl -L -O https://github.com/jpuritz/dDocent/raw/master/scripts/ReferenceOpt.sh
 ```
 Take a look at the script ReferenceOpt.sh.  
 This script uses  different loops to assemble references from an interval of cutoff values and c values from 0.8-0.98.  It take as a while to run, so I have pasted the output below for you.
-I have pasted the output below though.
 ```bash
 bash ReferenceOpt.sh 4 8 4 8 PE 16
 ```
