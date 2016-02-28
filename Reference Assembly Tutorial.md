@@ -26,23 +26,25 @@ module load dDocent/v2.18
 ```
 Now let's get the test data I created for the course.
 ```
-curl -L -o data.zip https://www.dropbox.com/sh/nh2km7n2k8egmge/AABWKxCXww4BKMZIcQXV6Vxma?dl=1
+curl -L -o data.zip https://www.dropbox.com/s/mo0x0mh69d4rwz3/data.zip?dl=0
 ```
 Let's check that everything went well.
 ```bash
-unzip data.zip
-```
-```
-ll
+unzip data.zip && ll
 ```
 You should see something like this:
 ```
-	 total 7824
-     -rw-r--r--. 1 jpuritz users 3290183 Feb 28 13:31 data.zip
-	 -rwxr--r--. 1 jpuritz users     600 Mar  6  2015 SimRAD.barcodes
-	 -rwxr--r--. 1 jpuritz users 2574784 Mar  6  2015 SimRAD_R1.fastq.gz
-	 -rwxr--r--. 1 jpuritz users 2124644 Mar  6  2015 SimRAD_R2.fastq.gz
-	 -rwxr--r--. 1 jpuritz users   12272 Mar  6  2015 simRRLs2.py
+Archive:  data.zip
+  inflating: SimRAD.barcodes         
+  inflating: SimRAD_R1.fastq.gz      
+  inflating: SimRAD_R2.fastq.gz      
+  inflating: simRRLs2.py             
+total 7664
+-rw-r--r--. 1 jpuritz users 3127907 Feb 28 18:26 data.zip
+-rwxr--r--. 1 jpuritz users     600 Mar  6  2015 SimRAD.barcodes
+-rwxr--r--. 1 jpuritz users 2574784 Mar  6  2015 SimRAD_R1.fastq.gz
+-rwxr--r--. 1 jpuritz users 2124644 Mar  6  2015 SimRAD_R2.fastq.gz
+-rwxr--r--. 1 jpuritz users   12272 Mar  6  2015 simRRLs2.py
 ```
 The data that we are going to use was simulated using the simRRLs2.py script that I modified from the one published by Deren Eaton.  You can find the original version here (http://dereneaton.com/software/simrrls/).  Basically, the script simulated ddRAD 1000 loci shared across an ancestral population and two extant populations.  Each population had 180,000 individuals, and the two extant 
 population split from the ancestral population 576,000 generations ago and split from each other 288,000 generation ago.  The two populations exchanged 4N*0.001 migrants per generation until about 2,000 generations ago.  4Nu equaled 0.00504 and mutations had a 10% chance of being an INDEL polymorphism.  Finally, reads for each locus were simulated on a per individual basis at a mean of 20X coverage (coming from a normaldistribution with a SD 8) and had an inherent sequencing error rate of 0.001. 

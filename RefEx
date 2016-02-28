@@ -27,22 +27,26 @@
 
 #3 Now let's get the test data I created for the course.
 
-#c#3    $curl -L -o data.zip https://www.dropbox.com/sh/nh2km7n2k8egmge/AABWKxCXww4BKMZIcQXV6Vxma?dl=1
+#c#3    $curl -L -o data.zip https://www.dropbox.com/s/mo0x0mh69d4rwz3/data.zip?dl=0
 
 #4 Let's check that everything went well.
 
-#c#4	$unzip data.zip 
-#c#4	ll 
+#c#4	$unzip data.zip && ll 
 
 #4 You should see something like this:
-#4		total 7824
-#4      -rw-r--r--. 1 jpuritz users 3290183 Feb 28 13:31 data.zip
-#4      -rwxr--r--. 1 jpuritz users     600 Mar  6  2015 SimRAD.barcodes
-#4      -rwxr--r--. 1 jpuritz users 2574784 Mar  6  2015 SimRAD_R1.fastq.gz
-#4      -rwxr--r--. 1 jpuritz users 2124644 Mar  6  2015 SimRAD_R2.fastq.gz
-#4      -rwxr--r--. 1 jpuritz users   12272 Mar  6  2015 simRRLs2.py
-
-#5 The data that we are going to use was simulated using the simRRLs2.py script that I modified from the one published by Deren Eaton.  
+#4 Archive:  data.zip
+#4   inflating: SimRAD.barcodes         
+#4   inflating: SimRAD_R1.fastq.gz      
+#4   inflating: SimRAD_R2.fastq.gz      
+#4   inflating: simRRLs2.py             
+#4 total 7664
+#4 -rw-r--r--. 1 jpuritz users 3127907 Feb 28 18:26 data.zip
+#4 -rwxr--r--. 1 jpuritz users     600 Mar  6  2015 SimRAD.barcodes
+#4 -rwxr--r--. 1 jpuritz users 2574784 Mar  6  2015 SimRAD_R1.fastq.gz
+#4 -rwxr--r--. 1 jpuritz users 2124644 Mar  6  2015 SimRAD_R2.fastq.gz
+#4 -rwxr--r--. 1 jpuritz users   12272 Mar  6  2015 simRRLs2.py
+#5
+#5  The data that we are going to use was simulated using the simRRLs2.py script that I modified from the one published by Deren Eaton.  
 #5 You can find the original version here (http://dereneaton.com/software/simrrls/).  Basically, the script simulated ddRAD 1000 loci 
 #5 shared across an ancestral population and two extant populations.  Each population had 180,000 individuals, and the two extant 
 #5 population split from the ancestral population 576,000 generations ago and split from each other 288,000 generation ago.  The two 

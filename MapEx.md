@@ -58,8 +58,8 @@ The bulk of the data in a SAM file is in the alignment section though.  To see t
 mawk '!/@/' PopA_01.sam	| head -2
 ```
 ```
-lane1_fakedata0_0	99	E438_L101	2	60	94M		=	106	 204	AATTCGGCTTGCAACGCAAGTGACGATTCCCACGGACATAACTGATCTAAGTAACTTCCAAATCTGGGAATGGGATTTCATAATTAAGGACTAT	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBNM:i:0	MD:Z:94	AS:i:94	XS:i:0
-lane1_fakedata0_0	147	E438_L101	106	60	100M	=	2	-204	ACGACGAGCAATCCACAGACCTAGGCCCATCGAAGCGTCTTATGATTGATAACATCAGAGGGGGATGGGAGGTCCTGCTGTCGCATGGGAGAATACACCG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	NM:i:2	MD:Z:57A41C0	AS:i:94	XS:i:0
+lane1_fakedata0_0	99	dDocent_Contig_702	2	60	94M	=	106	204	AATTCGGCTTGCAACGCAAGTGACGATTCCCACGGACATAACTGATCTAAGTAACTTCCAAATCTGGGAATGGGATTTCATAATTAAGGACTAT	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	NM:i:0	MD:Z:94	AS:i:94	XS:i:0
+lane1_fakedata0_0	147	dDocent_Contig_702	106	60	100M	=	2	-204	ACGACGAGCAATCCACAGACCTAGGCCCATCGAAGCGTCTTATGATTGATAACATCAGAGGGGGATGGGAGGTCCTGCTGTCGCATGGGAGAATACACCG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	NM:i:2	MD:Z:57A41C0	AS:i:94	XS:i:0
 ```
 This output is a tab delimited text file, and each column holds a specific type of data.
 
@@ -91,13 +91,13 @@ samtools view -Sbt reference.fasta PopA_01.sam | samtools flagstat -
 [samopen] SAM header is present: 1000 sequences.
 37540 + 0 in total (QC-passed reads + QC-failed reads)
 0 + 0 duplicates
-36935 + 0 mapped (98.39%:-nan%)
+37370 + 0 mapped (99.55%:-nan%)
 37540 + 0 paired in sequencing
 18770 + 0 read1
 18770 + 0 read2
-25248 + 0 properly paired (67.26%:-nan%)
-36670 + 0 with itself and mate mapped
-265 + 0 singletons (0.71%:-nan%)
+25894 + 0 properly paired (68.98%:-nan%)
+37200 + 0 with itself and mate mapped
+170 + 0 singletons (0.45%:-nan%)
 0 + 0 with mate mapped to a different chr
 0 + 0 with mate mapped to a different chr (mapQ>=5)
 ```
@@ -117,51 +117,61 @@ bwa mem reference.fasta PopA_01.F.fq.gz PopA_01.R.fq.gz -I 200,40 2>/dev/null | 
 ```
 37540 + 0 in total (QC-passed reads + QC-failed reads)
 0 + 0 duplicates
-37200 + 0 mapped (99.09%:-nan%)
+37540 + 0 mapped (100.00%:-nan%)
 37540 + 0 paired in sequencing
 18770 + 0 read1
 18770 + 0 read2
-37200 + 0 properly paired (99.09%:-nan%)
-37200 + 0 with itself and mate mapped
+37540 + 0 properly paired (100.00%:-nan%)
+37540 + 0 with itself and mate mapped
 0 + 0 singletons (0.00%:-nan%)
 0 + 0 with mate mapped to a different chr
 0 + 0 with mate mapped to a different chr (mapQ>=5)
 ```
-The -I parameter sets the insert size at 200 and the standard deviation at 40.  Now the proper pairings jump up to 99.09% or all of the mapped reads.
+The -I parameter sets the insert size at 200 and the standard deviation at 40.  Now the proper pairings jump up to 100% or all of the mapped reads.
+
+Let's look at a second sample:
+```bash
+bwa mem reference.fasta PopA_02.F.fq.gz PopA_02.R.fq.gz -I 200,40 2>/dev/null | samtools view -SbT reference.fasta - | samtools flagstat -
+```
+```
+38296 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 duplicates
+38295 + 0 mapped (100.00%:-nan%)
+38296 + 0 paired in sequencing
+19148 + 0 read1
+19148 + 0 read2
+38294 + 0 properly paired (99.99%:-nan%)
+38294 + 0 with itself and mate mapped
+1 + 0 singletons (0.00%:-nan%)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+```	
 
 There are still a very small percentage of reads that haven't mapped.  One way to optimize this is to change the scoring of alignments.
 In short, alignments are scored by multiplying the number of matching bases by a match score (default 1), then the number of mismatching bases are multiplied by a mismatch penalty (default 4) and subtracted from the match score.  Next any gaps are penalized by a single gap opening penalty (default 6) and a gap extension penalty (default 1) multiplied the length of the gap.  The easiest way to make the alignment a little more liberal is to just decrease the mismatch and gap opening penalties by 1.
 ```bash	
-bwa mem reference.fasta PopA_01.F.fq.gz PopA_01.R.fq.gz -I 200,40 -B 3 -O 5 2>/dev/null | samtools view -SbT reference.fasta - | samtools flagstat -
+bwa mem reference.fasta PopA_02.F.fq.gz PopA_02.R.fq.gz -I 200,40 -B 3 -O 5 2>/dev/null | samtools view -SbT reference.fasta - | samtools flagstat -
 ```
 ```
-37540 + 0 in total (QC-passed reads + QC-failed reads)
+38296 + 0 in total (QC-passed reads + QC-failed reads)
 0 + 0 duplicates
-37200 + 0 mapped (99.09%:-nan%)
-37540 + 0 paired in sequencing
-18770 + 0 read1
-18770 + 0 read2
-37200 + 0 properly paired (99.09%:-nan%)
-37200 + 0 with itself and mate mapped
-0 + 0 singletons (0.00%:-nan%)
+38295 + 0 mapped (100.00%:-nan%)
+38296 + 0 paired in sequencing
+19148 + 0 read1
+19148 + 0 read2
+38294 + 0 properly paired (99.99%:-nan%)
+38294 + 0 with itself and mate mapped
+1 + 0 singletons (0.00%:-nan%)
 0 + 0 with mate mapped to a different chr
 0 + 0 with mate mapped to a different chr (mapQ>=5)
+
 ```	
 Well, that didn't change anything.  These might be reads that don't match to any reference contig.  We can use mawk to quickly examine some of the reads.
 ```bash	
-bwa mem reference.fasta PopA_01.F.fq.gz PopA_01.R.fq.gz -I 200,40 -B 3 -O 5 2>/dev/null |  mawk '/\*/' | head
+bwa mem reference.fasta PopA_02.F.fq.gz PopA_02.R.fq.gz -I 200,40 -B 3 -O 5 2>/dev/null |  mawk '/\*/' | head
 ```
 ```
-lane1_fakedata52_0	77	*	0	0	*	*	0	0	AATTCCACCGTGAGCATAGTGCTCGTACCTGCCGCGAACTCTCCAACCACATAGCGGCCGGGAGGAGAAAGGTACTGTGAGAGGCGACGAGCGC	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0XS:i:0
-lane1_fakedata52_0	141	*	0	0	*	*	0	0	CGGACACCAATACAGGCGCATTATATTCGGATCCCCAGCTTAACGATCATCCTCCAGAGCCGTCATCTTCATTAATTAATGTCCCGCGGAGTTGGGCATG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
-lane1_fakedata52_1	77	*	0	0	*	*	0	0	AATTCCACCGTGAGCATAGTGCTCGTACCTGCCGCGAACTCTCCAACCACATAGCGGCCGGGAGGAGAAAGGTACTGTGAGAGGCGACGAGCGC	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0XS:i:0
-lane1_fakedata52_1	141	*	0	0	*	*	0	0	CGGACACCAATACAGGCGCATTATATTCGGATCCCCAGCTTAACGATCATCCTCCAGAGCCGTCATCTTCATTAATTAATGTCCCGCGGAGTTGGGCATG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
-lane1_fakedata52_2	77	*	0	0	*	*	0	0	AATTCCACCGTGAGCATAGTGCTCGTACCTGCCGCGAACTCTCCAACCACATAGCGGCCGGGAGGAGAAAGGTACTGTGAGAGGCGACGAGCGC	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0XS:i:0
-lane1_fakedata52_2	141	*	0	0	*	*	0	0	CGGACACCAATACAGGCGCATTATATTCGGATCCCCAGCTTAACGATCATCCTCCAGAGCCGTCATCTTCATTAATTAATGTCCCGCGGAGTTGGGCATG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
-lane1_fakedata52_3	77	*	0	0	*	*	0	0	AATTCCACCGTGAGCATAGTGCTCGTACCTGCCGCGAACTCTCCAACCACATAGCGGCCGGGAGGAGAAAGGTACTGTGAGAGGCGACGAGCGC	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0XS:i:0
-lane1_fakedata52_3	141	*	0	0	*	*	0	0	CGGACACCAATACAGGCGCATTATATTCGGATCCCCAGCTTAACGATCATCCTCCAGAGCCGTCATCTTCATTAATTAATGTCCCGCGGAGTTGGGCATG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
-lane1_fakedata52_4	77	*	0	0	*	*	0	0	AATTCCACCGTGAGCATAGTGCTCGTACCTGCCGCGAACTCTCCAACCACATAGCGGCCGGGAGGAGAAAGGTACTGTGAGAGGCGACGAGCGC	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0XS:i:0
-lane1_fakedata52_4	141	*	0	0	*	*	0	0	CGGACACCAATACAGGCGCATTATATTCGGATCCCCAGCTTAACGATCATCCTCCAGAGCCGTCATCTTCATTAATTAATGTCCCGCGGAGTTGGGCATG	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
+lane1_fakedata837_6	133	dDocent_Contig_271	2	0	*	=	2	0	CGGGCAAATAGGCATGTGAACGTATTACCTCTCAGGCGCTTCTCTCGCGGTCGTTCAACCACTCAGTGATAAAAACGGTAAACAGGGCCTGTTAAGATTA	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	AS:i:0	XS:i:0
 ```
 Here, you can see that neither the forward or reverse reads in these pairs mapped to any contig.  This likely means that our reference is not entirely correct.  It might have the right number of loci, but not the correct loci.  However, 99.01% is not too shabby.
 
