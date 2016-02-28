@@ -7,14 +7,15 @@
 ##	2.	To demultiplex samples with process_radtags and rename samples 
 ##	3.	To use the methods of dDocent (via rainbow) to assemble reference contigs
 ##	4.	To learn how optimize a de novo reference assembly
-##	5.	To learn how to utilize pyRAD to .
+##	5.	To learn how to utilize pyRAD to assemble loci
 ###########
 
 ## This tutorial is executable.  Simply type RefTut [number] to skip directly to the numbered
 ## step of the tutorial.
 ## Command lines start with a "$"
 
-
+#1 Welcome to the first exercise of B@G 2016!!
+#1
 #1 Let's get started.  First let's create a working directory for yourself for the Day 1 workshop
 
 #1		$mkdir D1W
@@ -557,13 +558,13 @@
 #65 Want to play with PyRAD more?  Try adding more outputs via line ##30 in the params.txt file
 #65	Check out the general use tutorial and paired ddRAD tutorial here http://dereneaton.com/software/pyrad/
 #!/bin/bash
-if which RefTut &>/dev/null; then
-    LOC=$(which RefTut)
+if which RefEx &>/dev/null; then
+    LOC=$(which RefEx)
 else
-	LOC="./RefTut"
+	LOC="./RefEx"
 fi
 if [[ -z "$1" ]]; then
-grep "##" $LOC | mawk '!/grep/'
+head -16 $LOC | grep "##" 
 else
 PATTERN=#$1[[:blank:]]
 grep "$PATTERN" $LOC | awk '{$1=""; print $0}'
