@@ -1,14 +1,14 @@
-B@G 2016 Mapping Exercise
+#B@G 2016 Mapping Exercise
 Designed by Jon Puritz
 
-GOALS
+#GOALS
 1.	To learn how to map reads using the MEM algorithm of BWA
 2.	To learn about the SAM/BAM file format 
 3.	To learn how to use SAMtools to manipulate and view SAM/BAM files
 4.	To learn how optimize read mappings by examining alignment statistics
 5.	BONUS GOAL- learn how to use sam-stats from ea-utils.
 
-Exercise
+#Exercise
 
 Let's find our way back to your original working directory
 The code on the next line needs to be edited to work properly
