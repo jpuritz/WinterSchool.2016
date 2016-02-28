@@ -3,7 +3,7 @@
 ###Designed by Jon Puritz###
 
 ###GOALS###
-##	1.  To set up test data for our exercise
+##	1.	To set up test data for our exercise
 ##	2.	To demultiplex samples with process_radtags and rename samples 
 ##	3.	To use the methods of dDocent (via rainbow) to assemble reference contigs
 ##	4.	To learn how optimize a de novo reference assembly
