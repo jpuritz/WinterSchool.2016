@@ -180,27 +180,29 @@ To get a better idea of how to optimize mapping further, let's take a look at so
 mkdir realdata
 cd realdata
 ln -s /gdc_home5/groups/bag2016/monday/mapping/* .
-bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 8 2>/dev/null | samtools view -@3 -q 1 -SbT reference.fasta - | samtools flagstat -
+bwa mem reference.fasta JC_1119.R1.fq.gz JC_1119.R2.fq.gz -I 200,40 -t 8 2>/dev/null | samtools view -@8 -q 1 -SbT reference.fasta - | samtools flagstat -
 ```
 ```
-1801059 + 0 in total (QC-passed reads + QC-failed reads)
+2327545 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+2919 + 0 supplementary
 0 + 0 duplicates
-1801059 + 0 mapped (100.00%:-nan%)
-1801059 + 0 paired in sequencing
-910738 + 0 read1
-890321 + 0 read2
-1755574 + 0 properly paired (97.47%:-nan%)
-1774166 + 0 with itself and mate mapped
-26893 + 0 singletons (1.49%:-nan%)
-18152 + 0 with mate mapped to a different chr
-17255 + 0 with mate mapped to a different chr (mapQ>=5)
+2327545 + 0 mapped (100.00% : N/A)
+2324626 + 0 paired in sequencing
+1172770 + 0 read1
+1151856 + 0 read2
+2157832 + 0 properly paired (92.82% : N/A)
+2266708 + 0 with itself and mate mapped
+57918 + 0 singletons (2.49% : N/A)
+107084 + 0 with mate mapped to a different chr
+81517 + 0 with mate mapped to a different chr (mapQ>=5)
 ```
 If you're paying attention, you would have noticed that I added another parameter to the bwa mem command (-t).  This sets the number of processors to use.  This file is much larger.  I also added -@ and -q parameters to samtools
 The -q 1 removes reads with 0 probability of mapping from being retained in the file and -@16 adds multithreading.  
 
 Now, we have a baseline to work with for this individual.  Let's try to optimize it.  First, let's relax the mismatch and gap opening penalties.
 ```bash
-bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 2>/dev/null | samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat -
+bwa mem reference.fasta JC_1119.R1.fq.gz JC_1119.R2.fq.gz -I 200,40 -t 8 -B 3 -O 5 2>/dev/null | samtools view -@8 -q 1 -SbT reference.fasta - | samtools flagstat -
 ```
 ```
 1803670 + 0 in total (QC-passed reads + QC-failed reads)
@@ -215,27 +217,29 @@ bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5
 19131 + 0 with mate mapped to a different chr
 17882 + 0 with mate mapped to a different chr (mapQ>=5)
 ```
-So, we've improved things somewhat.  We've mapped more reads, increased the proper pairings, decreased our singletons, but also have mapped more reads with discordant mates.
+So, we've improved things somewhat.  We've mapped more reads and mapped more less with discordant mates, but decreased the proper pairings %, increased our singletons.
 This discordant mappings, however, make up a very small percentage of the total mappings, around 1.5%.  Previously, it was 1.46%.  This probably is a good stopping point for
 trying to increase the number of mappings.  The more we add at this point, the worse they are going to be.  Let's take some steps to reduce bad mappings.
 
 We can add an additional flag to bwa that specifically aids with RAD mappings.  RADseqs tend to be more conserved at the 5' end simply because of the cut site.  In general, if the
 beginning of a read needs to be trimmed off to match (especially after going through quality filtering), it most likely is not homologous to that locus and should be removed.
 ```bash
-bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 -L 20,5 2>/dev/null | samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat -
+bwa mem reference.fasta JC_1119.R1.fq.gz JC_1119.R2.fq.gz -I 200,40 -t 8 -L 20,5 -B 3 -O 5 2>/dev/null | samtools view -@8 -q 1 -SbT reference.fasta - | samtools flagstat -
 ```
 ```
-1803638 + 0 in total (QC-passed reads + QC-failed reads))
+2329008 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+2314 + 0 supplementary
 0 + 0 duplicates
-1803638 + 0 mapped (100.00%:-nan%)
-1803638 + 0 paired in sequencing
-911432 + 0 read1
-892206 + 0 read2
-1758502 + 0 properly paired (97.50%:-nan%)
-1777691 + 0 with itself and mate mapped
-25947 + 0 singletons (1.44%:-nan%)
-18814 + 0 with mate mapped to a different chr
-17567 + 0 with mate mapped to a different chr (mapQ>=5)
+2329008 + 0 mapped (100.00% : N/A)
+2326694 + 0 paired in sequencing
+1174336 + 0 read1
+1152358 + 0 read2
+2158731 + 0 properly paired (92.78% : N/A)
+2268022 + 0 with itself and mate mapped
+58672 + 0 singletons (2.52% : N/A)
+107486 + 0 with mate mapped to a different chr
+79551 + 0 with mate mapped to a different chr (mapQ>=5)
 ```
 The improvement is slight but noticeable.  More reads are properly paired and there are less singletons and discordant mappings!
 
@@ -245,72 +249,82 @@ Can you think of a way how to do this?
 Remember that while the alignment is in SAM format, column 6 contains the CIGAR string.  If the read has been clipped at all (hard or soft), there will be an S or H
 character proceed by a number (the number of bases clipped).  So, we can use awk to filter via a regular expression to remove reads with significant clipping (for example more than 10 bases).
 ```bash
-bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -q 1 -@16 -SbT reference.fasta - | samtools flagstat -
+bwa mem reference.fasta JC_1119.R1.fq.gz JC_1119.R2.fq.gz -I 200,40 -t 8 -L 20,5 -B 3 -O 5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'|samtools view -@8 -q 1 -SbT reference.fasta - | samtools flagstat -
 ``` 
 ```
-1776476 + 0 in total (QC-passed reads + QC-failed reads)
+2272415 + 0 in total (QC-passed reads + QC-failed reads)
+0 + 0 secondary
+0 + 0 supplementary
 0 + 0 duplicates
-1776476 + 0 mapped (100.00%:-nan%)
-1776476 + 0 paired in sequencing
-901278 + 0 read1
-875198 + 0 read2
-1740835 + 0 properly paired (97.99%:-nan%)
-1754849 + 0 with itself and mate mapped
-21627 + 0 singletons (1.22%:-nan%)
-13407 + 0 with mate mapped to a different chr
-12684 + 0 with mate mapped to a different chr (mapQ>=5)
+2272415 + 0 mapped (100.00% : N/A)
+2272415 + 0 paired in sequencing
+1146942 + 0 read1
+1125473 + 0 read2
+2124931 + 0 properly paired (93.51% : N/A)
+2221470 + 0 with itself and mate mapped
+50945 + 0 singletons (2.24% : N/A)
+94842 + 0 with mate mapped to a different chr
+68401 + 0 with mate mapped to a different chr (mapQ>=5)
 ```
 While this step definitely decreased the overall mappings by a small percentage it increased our properly paired percentage and decreased the singleton and discordant mappings.  
 
 Let's try un relaxing the mapping parameters and compare the results with the previous
 ```bash
-bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat - > relaxed.stats
-bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat - > normal.stats
+bwa mem reference.fasta JC_1119.R1.fq.gz JC_1119.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat - > relaxed.stats
+bwa mem reference.fasta JC_1119.R1.fq.gz JC_1119.R2.fq.gz -I 200,40 -t 3 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -@16 -q 1 -SbT reference.fasta - | samtools flagstat - > normal.stats
 paste <(cut -f1 -d + relaxed.stats) <(cut -f1 -d + normal.stats) <(cut -f4-10 -d " " relaxed.stats) 
 ```
 ```
-1776476 	1770763 	in total (QC-passed reads + QC-failed reads)
+2272415 	2263752 	in total (QC-passed reads + QC-failed reads)
+0 			0 			secondary
+0 			0 			supplementary
 0 			0 			duplicates
-1776476 	1770763 	mapped (100.00%:-nan%)
-1776476 	1770763 	paired in sequencing
-901278 		899182 		read1
-875198 		871581 		read2
-1740835 	1734941 	properly paired (97.99%:-nan%)
-1754849 	1748324 	with itself and mate mapped
-21627 		22439 		singletons (1.22%:-nan%)
-13407 		12772 		with mate mapped to a different chr
-12684 		12306 		with mate mapped to a different chr
+2272415 	2263752 	mapped (100.00% : N/A)
+2272415 	2263752 	paired in sequencing
+1146942 	1140984 	read1
+1125473 	1122768 	read2
+2124931 	2120013 	properly paired (93.51% : N/A)
+2221470 	2215558 	with itself and mate mapped
+50945 		48194 		singletons (2.24% : N/A)
+94842 		93866 		with mate mapped to a different chr
+68401 		69122 		with mate mapped to a different chr
 ```	
-I cheated and added extra tabs to make the table better.  We can see that the relaxed stats lead to more mappings, more proper pairings, and less singletons.
-The only drawback to the more relaxed mappings is that there are more discordant mapping pairs.  These extra discordant mappings may be of very low quality and
+I cheated and added extra tabs to make the table better.  We can see that the relaxed stats lead to more mappings and  more proper pairings.
+The only drawback to the more relaxed mappings is that there are more discordant mapping pairs and singletons.  These extra discordant mappings may be of very low quality and
 
-Now on your own, try repeating cbut with a mapping quality cutoff of 5 and 10.  Does the same pattern hold true?
+Now on your own, try repeating the previous steps with a mapping quality cutoff of 5 and 10.  Does the same pattern hold true?
 Your results should look like this:
 ```
-1773055 	1768522 	in total (QC-passed reads + QC-failed reads)
-0 			0 			duplicates
-1773055 	1768522 	mapped (100.00%:-nan%)
-1773055 	1768522 	paired in sequencing
-899448 		898211 		read1
-873607 		870311 		read2
-1738784 	1733532 	properly paired (98.07%:-nan%)
-1752052 	1746425 	with itself and mate mapped
-21003 		22097 		singletons (1.18%:-nan%)
-12684 		12306 		with mate mapped to a different chr
-12684 		12306 		with mate mapped to a different chr
+2237573 	2227393 	in total (QC-passed reads + QC-failed reads)
+0 			0		 	secondary
+0 			0 			supplementary
+0 			0		 	duplicates
+2237573 	2227393 	mapped (100.00% : N/A)
+2237573 	2227393 	paired in sequencing
+1137155 	1129926 	read1
+1100418 	1097467 	read2
+2123913 	2114718 	properly paired (94.92% : N/A)
+2192739 	2184255 	with itself and mate mapped
+44834 		43138 		singletons (2.00% : N/A)
+68401 		69122 		with mate mapped to a different chr
+68401 		69122 		with mate mapped to a different chr 	
+
 ```
 ```
-1768505 	1764900 	in total (QC-passed reads + QC-failed reads))
+
+2208568 	2206988 	in total (QC-passed reads + QC-failed reads)
+0		 	0 			secondary
+0 			0 			supplementary
 0 			0 			duplicates
-1768505 	1764900 	mapped (100.00%:-nan%)
-1768505 	1764900 	paired in sequencing
-896815 		896363 		read1
-871690 		868537 		read2
-1737170 	1731639 	properly paired (98.23%:-nan%)
-1748381 	1743459 	with itself and mate mapped
-20124 		21441 		singletons (1.14%:-nan%)
-10699 		11304 		with mate mapped to a different chr
-10699 		11304 		with mate mapped to a different chr
+2208568 	2206988 	mapped (100.00% : N/A)
+2208568 	2206988 	paired in sequencing
+1116047 	1112705 	read1
+1092521 	1094283 	read2
+2116636 	2112749 	properly paired (95.84% : N/A)
+2171508 	2170128 	with itself and mate mapped
+37060 		36860 		singletons (1.68% : N/A)
+54457 		56970 		with mate mapped to a different chr
+54457 		56970 		with mate mapped to a different chr
 ```
 The benefit of relaxing the mapping parameters is even more pronounced at higher mapping qualities.
 This looks like an optimized mapping setting for this sample.
@@ -326,54 +340,59 @@ curl -O https://ea-utils.googlecode.com/files/ea-utils.1.1.2-537.tar.gz
 tar xvzf ea-utils.1.1.2-537.tar.gz
 cd ea-utils.1.1.2-537
 make
-cp sam-stats ~/programs
+cp sam-stats ~/bin
 cd ..
 rm -rf ea-utils.1.1.2-537*
 ```
 You can pipe results to this program, just like samtools, so you don't need to waste time writing files while optimizing.
 Here is an example from one of our exercises above:
 ```bash
-bwa mem reference.fasta BR_021.R1.fq.gz BR_021.R2.fq.gz -I 200,40 -t 3 -B 3 -O 5 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -q 1 -@16 -SbT reference.fasta - |  sam-stats -D -B 
+bwa mem reference.fasta JC_1119.R1.fq.gz JC_1119.R2.fq.gz -I 200,40 -t 8 -B 3 -O 5 -L 20,5 2>/dev/null | mawk '!/\t[2-9].[SH].*/' | mawk '!/[2-9].[SH]\t/'| samtools view -q 1 -@16 -SbT reference.fasta - |  sam-stats -D -B 
 ```
 ```
-reads	1776476
+reads	2272415
 version	1.34.488
-mapped reads	177647643
-mapped bases	17189970725
+mapped reads	2272409
+ambiguous	6
+pct ambiguous	0.000251
+max dup align	3
+singleton mappings	121567
+total mappings	2272415
+mapped bases	219626385
 library	paired-end
-discordant mates4109
-pct forward	99.712
+discordant mates	94842
+pct forward	97.756
 phred	33
-forward	1771351
-reverse	5125
-len max	101
-len mean	96.7644
-len stdev	6.9337
-mapq mean	58.8918
-mapq stdev	5.6485
+forward	2221426
+reverse	50989
+len max	100
+len mean	96.6489
+len stdev	5.3856
+mapq mean	56.8529
+mapq stdev	11.1001
 mapq Q1	60.00
 mapq median	60.00
 mapq Q3	60.00
-snp rate	0.01354
-ins rate	0.00111
-del rate	0.00196
-pct mismatch	56.303767
-insert mean	206.622
-insert stdev	0.48487
+snp rate	0.013529
+ins rate	0.002009
+del rate	0.001809
+pct mismatch	51.7389
+insert mean	206.5219
+insert stdev	0.6871
 insert Q1	206.00
-insert median	207.000
+insert median	206.00
 insert Q3	207.00
-base qual mean	36.533935
-base qual stdev	4.89766
-%A	28.0062
-%C	22.8043
-%G	21.1156
-%T	28.0707
-%N	0.0032
-num ref seqs	30926
-num ref aligned	25025
+base qual mean	37.1035
+base qual stdev	4.2683
+%A	28.4294
+%C	22.3528
+%G	20.5673
+%T	28.6492
+%N	0.0012
+num ref seqs	40171
+num ref aligned	26760
 ```
-The useful info that sam-stats reports that SAMtools doesn't is the number (and percentage) of ambiguous mappings (none in this case), and the number of reference sequences that the reads aligned to.  These can both be helpful for determining optimal mapping parameters.
+The useful info that sam-stats reports that SAMtools doesn't is the number (and percentage) of ambiguous mappings (6 in this case), and the number of reference sequences that the reads aligned to.  These can both be helpful for determining optimal mapping parameters.
 Ideally, you would like to maximize the number of reference sequences mapped to and minimize the number of ambiguous mappings.  
 
 
