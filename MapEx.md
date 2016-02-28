@@ -278,6 +278,7 @@ The only drawback to the more relaxed mappings is that there are more discordant
 
 Now on your own, try repeating cbut with a mapping quality cutoff of 5 and 10.  Does the same pattern hold true?
 Your results should look like this:
+```
 1773055 	1768522 	in total (QC-passed reads + QC-failed reads)
 0 			0 			duplicates
 1773055 	1768522 	mapped (100.00%:-nan%)
@@ -289,7 +290,8 @@ Your results should look like this:
 21003 		22097 		singletons (1.18%:-nan%)
 12684 		12306 		with mate mapped to a different chr
 12684 		12306 		with mate mapped to a different chr
-
+```
+```
 1768505 	1764900 	in total (QC-passed reads + QC-failed reads))
 0 			0 			duplicates
 1768505 	1764900 	mapped (100.00%:-nan%)
@@ -301,7 +303,7 @@ Your results should look like this:
 20124 		21441 		singletons (1.14%:-nan%)
 10699 		11304 		with mate mapped to a different chr
 10699 		11304 		with mate mapped to a different chr
-
+```
 The benefit of relaxing the mapping parameters is even more pronounced at higher mapping qualities.
 This looks like an optimized mapping setting for this sample.
 Remember that you should trying using multiple samples from your data set before picking final mapping parameters
