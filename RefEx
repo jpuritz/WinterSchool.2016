@@ -536,7 +536,6 @@
 #42 First let's make a new directory and move into it
 #c#43	$mkdir pyrad
 #c#43	$cd pyrad
-#c#43	$module load pyRAD/3.0.6
 #44	Next, let's make a symoblic link to the original fastq.gz data files and barcodes
 #c#44	$ln -s ../SimRAD.barcodes .
 #c#44	$ln -s ../SimRAD_R1.fastq.gz SimRAD_R1_.fastq.gz
@@ -545,7 +544,7 @@
 #44	In case you weren't aware, this makes a virtual link (like one on a desktop) to a file and saves disk space by not recopying the files
 #45
 #45	Now, let's load pyRAD
-#c#45	module load pyRAD/3.0.3
+#c#45	module load pyRAD/3.0.6
 #45	Next, let's create a parameters file
 #c#46	pyRAD -n
 #46	This creates a file (params.txt) that we can edit to adjust the settings of pyRAD
