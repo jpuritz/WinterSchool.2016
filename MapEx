@@ -150,7 +150,7 @@
 #13	To get a better idea of how to optimize mapping further, let's take a look at some real (messy) data.
 #c#13	$mkdir realdata
 #c#13	$cd realdata
-#c#13	$ln -s /gdc_home5/groups/bag2016/monday/mapping/* .
+#c#13	$ln -s /gdc_home5/groups/bag2016/monday/mapping2/* .
 #c#13	$bwa mem reference.fasta JC_1119.R1.fq.gz JC_1119.R2.fq.gz -I 200,40 -t 8 2>/dev/null | samtools view -@8 -q 1 -SbT reference.fasta - | samtools flagstat -
 #13	2327545 + 0 in total (QC-passed reads + QC-failed reads)
 #13	0 + 0 secondary

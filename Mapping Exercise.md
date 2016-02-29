@@ -179,7 +179,7 @@ To get a better idea of how to optimize mapping further, let's take a look at so
 ```bash
 mkdir realdata
 cd realdata
-ln -s /gdc_home5/groups/bag2016/monday/mapping/* .
+ln -s /gdc_home5/groups/bag2016/monday/mapping2/* .
 bwa mem reference.fasta JC_1119.R1.fq.gz JC_1119.R2.fq.gz -I 200,40 -t 8 2>/dev/null | samtools view -@8 -q 1 -SbT reference.fasta - | samtools flagstat -
 ```
 ```

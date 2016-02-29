@@ -408,40 +408,40 @@
 #33
 #33                                           Histogram of number of reference contigs
 #33   Number of Occurrences
-#33     200 ++----------------+-----------------+------------------+-----------------+-----------------+----------------++
-#33         +                 +                 +                 'plot.kopt.data' using (bin($1,binwidth)):(1.0)*********
-#33     180 ++                                                                                         *                +*
-#33         |                                                                                          *                 *
-#33         |                                                                                          *                 *
-#33     160 ++                                                                                         *                +*
-#33         |                                                                                          *                 *
-#33     140 ++                                                                                         *                +*
-#33         |                                                                                          *                 *
-#33         |                                                                                          *                 *
-#33     120 ++                                                                                         *                +*
-#33         |                                                                                          *                 *
-#33     100 ++                                                                                         *                +*
-#33         |                                                                                          *                 *
-#33      80 ++                                                                                         *                +*
-#33         |                                                                                          *                 *
-#33         |                                                                                          *                 *
-#33      60 ++                                                                                         *                +*
-#33         |                                   ********************************************************                 *
-#33      40 ++                                  *                                                      *                +*
-#33         |                                   *                                                      *                 *
-#33         |                                   *                                                      *                 *
-#33      20 ++                                  *                                                      *                +*
-#33         *************************************                  +                 +                 *                 *
+#33     200 ++--------------+--------------+---------------+--------------+---------------+--------------+--------------++
+#33         +               +              +               +      'plot.kopt.data' using (bin($1,binwidth)):(1.0)*********
+#33     180 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33         |                                                                                            *               *
+#33     160 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33     140 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33         |                                                                                            *               *
+#33     120 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33     100 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33      80 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33         |                                                                                            *               *
+#33      60 ++                                                                                           *              +*
+#33         |                                             ************************************************               *
+#33      40 ++                                            *                                              *              +*
+#33         |                                             *                                              *               *
+#33         |                                             *                                              *               *
+#33      20 ++                                            *                                              *              +*
+#33         ***********************************************+              +               +              *               *
 #33       0 **************************************************************************************************************
-#33        990               992               994                996               998               1000              1002
+#33        988             990            992             994            996             998            1000            1002
 #33                                                  Number of reference contigs
 #33 
-#33 Average contig number = 999.2
+#33 Average contig number = 999.452
 #33 The top three most common number of contigs
 #33 X	Contig number
-#33 190	1000
-#33 20	999
-#33 20	998
+#33 164	1000
+#33 19	998
+#33 18	999
 #33 The top three most common number of contigs (with values rounded)
 #33 X	Contig number
 #33 250	1000.0
@@ -458,6 +458,53 @@
 
 
 
+#Bonus Section
+
+Here, I am going to let you in on an experimental script I have been using to help optimize reference assemblies.
+```bash
+curl -L -O curl -L -O https://raw.githubusercontent.com/jpuritz/WinterSchool.2016/master/RefMapOpt.sh
+```
+This script assembles references across cutoff values and then maps 20 random samples and evaluates mappings to the reference, along with number of contigs and coverage.  
+It takes a long time to run, but here's a sample command and output
+```bash
+#RefMapOpt.sh 4 8 4 8 0.9 64 PE
+```
+This would loop across cutoffs of 4-8 using a similarity of 90% for clustering, parellized across 64 processors, using PE assembly technique.
+
+The output is stored in a file called `mapping.results`
+```bash
+cat mapping.results
+```
+```
+Cov		Non0Cov	Contigs	MeanContigsMapped	K1	K2	SUM Mapped	SUM Properly	Mean Mapped	Mean Properly	MisMatched
+37.3272	39.6102	1000	943.35				4	4	747290		747065			37364.5		37353.2			0
+37.3819	39.6683	1000	943.35				4	5	748386		748110			37419.3		37405.5			0
+37.4439	39.7298	1000	943.45				4	6	749626		749445			37481.3		37472.2			0
+37.4826	39.7709	1000	943.45				4	7	750401		750222			37520.1		37511.1			0
+37.4648	39.7522	1000	943.45				4	8	750045		749760			37502.2		37488			0
+37.3382	39.6198	1000	943.4				5	4	747510		747285			37375.5		37364.2			0
+37.3954	39.6805	1000	943.4				5	5	748655		748379			37432.8		37418.9			0
+37.448	39.7343	1000	943.45				5	6	749710		749529			37485.5		37476.4			0
+37.4689	39.7565	1000	943.45				5	7	750127		749860			37506.3		37493			0
+37.4436	39.728	999		942.55				5	8	748872		748587			37443.6		37429.3			0
+37.3447	39.6268	1000	943.4				6	4	747640		747433			37382		37371.7			0
+37.4288	39.7117	1000	943.5				6	5	749324		749220			37466.2		37461			0
+37.4724	39.7582	1000	943.5				6	6	750198		749944			37509.9		37497.2			0
+37.4537	39.7405	1000	943.45				6	7	749824		749557			37491.2		37477.8			0
+37.4381	39.72	999		942.6				6	8	748761		748478			37438.1		37423.9			0
+37.3876	39.6723	1000	943.4				7	4	748499		748407			37424.9		37420.3			0
+37.4374	39.7253	1000	943.4				7	5	749497		749388			37474.8		37469.4			0
+37.4482	39.7346	1000	943.45				7	6	749714		749475			37485.7		37473.8			0
+37.4117	39.6938	1000	943.5				7	7	748982		748732			37449.1		37436.6			0
+37.4108	39.6893	998		941.7				7	8	747468		747207			37373.4		37360.3			0
+37.4254	39.7041	1000	943.6				8	4	749256		749164			37462.8		37458.2			0
+37.4307	39.7202	1000	943.35				8	5	749363		749185			37468.2		37459.2			0
+37.4209	39.7042	998		941.6				8	6	747669		747400			37383.4		37370			0
+37.4094	39.6924	997		940.65				8	7	746692		746416			37334.6		37320.8			0
+37.4915	39.7712	989		933.3				8	8	742332		742048			37116.6		37102.4			0
+```
+I have added extra tabs for readability.  The output contains the average coverage per contig, the average coverage per contig not counting zero coverage contigs, the number of contigs, the mean number of contigs mapped, the two cutoff values used, the sum of all mapped reads, the sum of all properly mapped reads, the mean number of mapped reads, the mean number of properly mapped reads, and the number of reads that are mapped to mismatching contigs.
+Here, we are looking to values that maximize properly mapped reads, the mean number of contigs mapped, and the coverage.  In this example, it's easy.  Values 4,7 produce the highes number of properly mapped reads, coverage, and contigs. 
 
 
 
@@ -493,16 +540,12 @@
 
 
 
-#12
-#12 This code uses mawk (a faster, c++ version of awk) to sort through the fastq file and remove only the quality scores but keep the header and
-#12 sequence
-#13 
-#13 Next we can use the program seqtk to quickly reverse complement the pooled reverse reads to put everything in a 5' to 3' orientation
-#c#13	$seqtk seq -r reverse > reverseRC
-#14 Now we can use a perl script to paste the forward and reverse reads together with forward reads with 10 Ns in between
-#c#14	$mergefq.pl forward reverseRC concat.fasta
-#15
-#15 Let's look at the new merged sequences
+
+
+
+
+
+
 #c#15	$head concat.fasta
 #15 >lane1_fakedata0_0 1:N:0:_1
 #15 AATTCGGCTTGCAACGCAAGTGACGATTCCCACGGACATAACTGATCTAAGTAACTTCCAAATCTGGGAATGGGATTTCATAATTAAGGACTATNNNNNNNNNNACGACGAGCAATCCACAGACCTAGGCCCATCGAAGCGTCTTATGATTGATAACATCAGAGGGGGATGGGAGGTCCTGCTGTCGCATGGGAGAATACACCG
@@ -682,45 +725,45 @@
 #40 This script uses two different loops to assemble references from K cutoff 2-30 and c values from 0.8-0.98.  It take as a while to run, and would likely overload the server if all of you started running it.
 #40 I have pasted the output below though.
 #c#41 	$#bash ReferenceOpt.sh 4 8 4 8 PE 16 
-#41                                           Histogram of number of reference contigs
-#41   Number of Occurrences
-#41     200 ++--------------+--------------+---------------+--------------+---------------+--------------+--------------++
-#41         +               +              +               +      'plot.kopt.data' using (bin($1,binwidth)):(1.0)*********
-#41     180 ++                                                                                           *              +*
-#41         |                                                                                            *               *
-#41         |                                                                                            *               *
-#41     160 ++                                                                                           *              +*
-#41         |                                                                                            *               *
-#41     140 ++                                                                                           *              +*
-#41         |                                                                                            *               *
-#41         |                                                                                            *               *
-#41     120 ++                                                                                           *              +*
-#41         |                                                                                            *               *
-#41     100 ++                                                                                           *              +*
-#41         |                                                                                            *               *
-#41      80 ++                                                                                           *              +*
-#41         |                                                                                            *               *
-#41         |                                                                                            *               *
-#41      60 ++                                                                                           *              +*
-#41         |                                             ************************************************               *
-#41      40 ++                                            *                                              *              +*
-#41         |                                             *                                              *               *
-#41         |                                             *                                              *               *
-#41      20 ++                                            *                                              *              +*
-#41         ***********************************************+              +               +              *               *
-#41       0 **************************************************************************************************************
-#41        988             990            992             994            996             998            1000            1002
-#41                                                  Number of reference contigs
-#41 
+#41                                          Histogram of number of reference contigs
+#41  Number of Occurrences
+#41    200 ++--------------+--------------+---------------+--------------+---------------+--------------+--------------++
+#41        +               +              +               +      'plot.kopt.data' using (bin($1,binwidth)):(1.0)*********
+#41    180 ++                                                                                           *              +*
+#41        |                                                                                            *               *
+#41        |                                                                                            *               *
+#41    160 ++                                                                                           *              +*
+#41        |                                                                                            *               *
+#41    140 ++                                                                                           *              +*
+#41        |                                                                                            *               *
+#41        |                                                                                            *               *
+#41    120 ++                                                                                           *              +*
+#41        |                                                                                            *               *
+#41    100 ++                                                                                           *              +*
+#41        |                                                                                            *               *
+#41     80 ++                                                                                           *              +*
+#41        |                                                                                            *               *
+#41        |                                                                                            *               *
+#41     60 ++                                                                                           *              +*
+#41        |                                             ************************************************               *
+#41     40 ++                                            *                                              *              +*
+#41        |                                             *                                              *               *
+#41        |                                             *                                              *               *
+#41     20 ++                                            *                                              *              +*
+#41        ***********************************************+              +               +              *               *
+#41      0 **************************************************************************************************************
+#41       988             990            992             994            996             998            1000            1002
+#41                                                 Number of reference contigs
+#41
 #41 Average contig number = 999.452
 #41 The top three most common number of contigs
 #41 X	Contig number
 #41 164	1000
 #41 19	998
 #41 18	999
-#41	The top three most common number of contigs (with values rounded)
-#41	X	Contig number
-#41	250	1000.0
+#41 The top three most common number of contigs (with values rounded)
+#41 X	Contig number
+#41 250	1000.0	250	1000.0
 #41 
 #41
 #41	You can see that the most common number of contigs across all iteration is 1000, but also that the top three occuring and the average are all within 1% of the true value
