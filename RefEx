@@ -27,7 +27,7 @@
 
 #3 Now let's get the test data I created for the course.
 
-#c#3    $curl -L -o data.zip https://www.dropbox.com/s/mo0x0mh69d4rwz3/data.zip?dl=0
+#c#3	$curl -L -o data.zip https://www.dropbox.com/s/mo0x0mh69d4rwz3/data.zip?dl=0
 
 #4 Let's check that everything went well.
 
@@ -65,7 +65,7 @@
 #5 (http://creskolab.uoregon.edu/stacks/comp/process_radtags.php)
 #5
 #5 Let's start by making a list of barcodes.  The SimRAD.barcodes file actually has the sample name and barcode listed.  See for yourself.
-#c#5     $head SimRAD.barcodes
+#c#5	$head SimRAD.barcodes
 #5
 #5 You should see:
 #5 PopA_01 ATGGGG
@@ -725,7 +725,7 @@
 #c#62	$rm ./outfiles/* && pyRAD -p params.txt -s 7
 #63	
 #63	Let's see if that helped.
-#c$63	$head ./stats/c88d6m4p3.stats
+#c#63	$head ./stats/c88d6m4p3.stats
 #63	1018        ## loci with > minsp containing data
 #63	970         ## loci with > minsp containing data & paralogs removed
 #63	970         ## loci with > minsp containing data & paralogs removed & final filtering
