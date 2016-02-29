@@ -527,7 +527,7 @@
 #44	recode a log file for you for each of the steps, including the depth histogram. 
 #c#44	$curl -L -O https://github.com/jpuritz/dDocent/raw/master/scripts/dDocent_filters
 #c#44	$chmod +x dDocent_filters
-#c#44	$./dDocentfilters
+#c#44	$./dDocent_filters
 #44	This script will automatically filter a FreeBayes generated VCF file using criteria related to site depth,
 #44	quality versus depth, strand representation, allelic balance at heterzygous individuals, and paired read representation.
 #44	The script assumes that loci and individuals with low call rates (or depth) have already been removed.
