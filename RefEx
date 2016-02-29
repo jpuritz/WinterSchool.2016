@@ -546,7 +546,7 @@
 #45	Now, let's load pyRAD
 #c#45	module load pyRAD/3.0.6
 #45	Next, let's create a parameters file
-#c#46	pyRAD -n
+#c#46	$pyrad -n
 #46	This creates a file (params.txt) that we can edit to adjust the settings of pyRAD
 #46
 #46 We will need to edit a few values.  You can do this in a text editor like nano or emacs, but for this exercise it is easier just to use sed
@@ -558,7 +558,7 @@
 #c#48	$sed -i '/## 11. /c\pairddrad                 ## 11. datatype... ' ./params.txt
 #48
 #49	Now, we are ready to proceed with the pyRAD pipeline.  First step is demultiplexing files
-#c#49	$pyRAD -p params.txt -s 1
+#c#49	$pyrad -p params.txt -s 1
 #49 You should see
 #49  ------------------------------------------------------------
 #49   pyRAD : RADseq for phylogenetics & introgression analyses
@@ -571,7 +571,7 @@
 #50	This now created demultiplexed files with the proper pyRAD naming convention.  There are stats about the demultiplexing in the ./stats directory
 #50
 #50	The next step is quality filtering.  This is basic filtering, removing any reads with Illumina adapters in them, and replacing low quality bases with Ns.
-#c#50	$pyRAD -p params.txt -s 2
+#c#50	$pyrad -p params.txt -s 2
 #50 You should see
 #50  ------------------------------------------------------------
 #50   pyRAD : RADseq for phylogenetics & introgression analyses
@@ -582,7 +582,7 @@
 #50  ........................................
 #51	Stats about the filtering can be found in the ./stats directory.  For the simulated data set, no reads are filtered.
 #51	Unlike the previous method, pyRAD first clusters reads together within individuals for assembly
-#c#51	$pyRAD -p params.txt -s 3
+#c#51	$pyrad -p params.txt -s 3
 #51	The output should look like:
 #51   ------------------------------------------------------------
 #51    pyRAD : RADseq for phylogenetics & introgression analyses
@@ -635,7 +635,7 @@
 #54
 #55 Now, let's delete all the initial cluster files and redo this step
 #c#55	$rm ./clust.88/* && mv ./stats/s3.clusters.txt ./stats/s3.clusters.txt.old
-#c#55	$pyRAD -p params.txt -s 3
+#c#55	$pyrad -p params.txt -s 3
 #56	Let's check the results
 #c#56	$head -50 ./stats/s3.clusters.txt
 #56	taxa	total	dpt.me	dpt.sd	d>5.tot	d>5.me	d>5.sd	badpairs
@@ -652,7 +652,7 @@
 #58	
 #58	The next step of the pyRAD assembly calls the consensus sequence for each within-individual cluster.  It also applies filters aiming to remove potential paralogs.
 #58 It does this by estimating the error rate and level of heterozygosity in the data set and filters clusters that have too many heterozygous sits, more than 2 haplotypes, and too many low quality bases
-#c#58	pyRAD -p params.txt -s 45
+#c#58	$pyrad -p params.txt -s 45
 #58	The output should be like this:
 #58 ------------------------------------------------------------
 #58   pyRAD : RADseq for phylogenetics & introgression analyses
@@ -664,7 +664,7 @@
 #58	step 5: created consensus seqs for 40 samples, using H=0.00732 E=0.00100
 #58	........................................
 #59	The next step is to cluster between samples
-#c#59	$pyRAD -p params.txt -s 6
+#c#59	$pyrad -p params.txt -s 6
 #59	The output on the screen should look like:
 #59     ------------------------------------------------------------
 #59      pyRAD : RADseq for phylogenetics & introgression analyses
@@ -688,7 +688,7 @@
 #60 We can see that pyRAD (via the program vsearch) found 1049 different shared reference sequences
 #60
 #60	Next we call the last step of pyRAD to produce usable outputs of all the data
-#c#60	$pyRAD -p params.txt -s 7
+#c#60	$pyrad -p params.txt -s 7
 #60 The screen should look like:
 #60	  	------------------------------------------------------------
 #60    	pyRAD : RADseq for phylogenetics & introgression analyses
