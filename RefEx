@@ -731,7 +731,7 @@
 #63	970         ## loci with > minsp containing data & paralogs removed & final filtering
 #63
 #63 ## number of loci recovered in final data set for each taxon.
-$63 taxon	nloci
+#63 taxon	nloci
 #63	PopA_01	806
 #63	PopA_02	802
 #64
