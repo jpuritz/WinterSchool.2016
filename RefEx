@@ -752,5 +752,7 @@ if [[ -z "$1" ]]; then
 head -16 $LOC | grep "##" 
 else
 PATTERN=#$1[[:blank:]]
-grep "$PATTERN" $LOC | awk '{$1=""; print $0}'
+PATTERN2=#c#$1
+PATTERN4=^$1
+grep $PATTERN $LOC | sed 's/'$PATTERN2'\t/ /g' | sed 's/#'$1'\s/ /g'
 fi

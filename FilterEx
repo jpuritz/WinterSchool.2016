@@ -818,6 +818,8 @@ fi
 if [[ -z "$1" ]]; then
 head -13 $LOC
 else
-PATTERN=#c#$1\t
-grep "$PATTERN" $LOC | tr -d "$PATTERN"
+PATTERN=#$1[[:blank:]]
+PATTERN2=#c#$1
+PATTERN4=^$1
+grep $PATTERN $LOC | sed 's/'$PATTERN2'\t/ /g' | sed 's/#'$1'\s/ /g'
 fi
