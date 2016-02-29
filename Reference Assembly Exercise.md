@@ -727,20 +727,20 @@ The output on the screen should look like:
 
         step 6: clustering across 40 samples at '.88' similarity
 
-vsearch v1.8.0_linux_x86_64, 15.6GB RAM, 6 cores
+vsearch v1.1.1_linux_x86_64, 883.4GB RAM, 160 cores
 https://github.com/torognes/vsearch
 
-Reading file /home/biolab/INSTRUCTOR/jpuritz/pyrad/clust.88/cat.firsts_ 100%
+Reading file /gdc_home4/jpuritz/test/D1W/pyrad/clust.88/cat.firsts_ 100%  
 3115443 nt in 33487 seqs, min 91, max 99, avg 93
-Counting unique k-mers 100%
-Clustering 100%
-Sorting clusters 100%
-Writing clusters 100%
-Clusters: 1053 Size min 1, max 40, avg 31.8
-Singletons: 22, 0.1% of seqs, 2.1% of clusters
+Indexing sequences 100%  
+Counting unique k-mers 100%  
+Clustering 100%  
+Writing clusters 100%  
+Clusters: 1050 Size min 1, max 40, avg 31.9
+Singletons: 19, 0.1% of seqs, 1.8% of clusters
 
-        finished clustering
-```
+	finished clustering
+[```
 We can see that pyRAD (via the program vsearch) found 1049 different shared reference sequences
 
 Next we call the last step of pyRAD to produce usable outputs of all the data
@@ -758,9 +758,9 @@ The screen should look like:
 	exclude 
 	................................................................
 	final stats written to:
-	/gdc_home4/jpuritz/DATA/test2/pyrad/stats/c88d6m4p3.stats
+	 /gdc_home4/jpuritz/test/D1W/pyrad/stats/c88d6m4p3.stats
 	output files being written to:
-	/gdc_home4/jpuritz/DATA/test2/pyrad/outfiles/ directory
+	 /gdc_home4/jpuritz/test/D1W/pyrad/outfiles/ directory
 ```
 Let's take a look at the stats.
 
@@ -769,13 +769,13 @@ head ./stats/c88d6m4p3.stats
 ```
 ```
 1018        ## loci with > minsp containing data
-106         ## loci with > minsp containing data & paralogs removed
-106         ## loci with > minsp containing data & paralogs removed & final filtering
+108         ## loci with > minsp containing data & paralogs removed
+108         ## loci with > minsp containing data & paralogs removed & final filtering
 
 ## number of loci recovered in final data set for each taxon.
-taxon   nloci
-PopA_01 69
-PopA_02 66
+taxon	nloci
+PopA_01	68
+PopA_02	67
 ```
 What the heck happened to all our data?  We went from 1018 RAD fragments to 106???????
 It looks like pyRAD is inferring that almost all of the loci are paralogs.
@@ -796,9 +796,9 @@ head ./stats/c88d6m4p3.stats
 970         ## loci with > minsp containing data & paralogs removed & final filtering
 
 ## number of loci recovered in final data set for each taxon.
-taxon   nloci
-PopA_01 808
-PopA_02 803
+taxon	nloci
+PopA_01	806
+PopA_02	802
 ```	
 That looks much better! 970 is very close to the actual value!
 Now that you know how to manipulate the different parameters in pyRAD, experiment on your own to see if you can find the right settings to get to the correct number of loci!
