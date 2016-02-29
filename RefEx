@@ -157,7 +157,7 @@
 #13
 #13 Take a look at the contents of uniqseq.data
 #c#13	$more uniqseq.data
-#14	We can even plot this to the terminal using gnuplot
+#14 We can even plot this to the terminal using gnuplot
 #c#14	$gnuplot << \EOF 
 #c#14	$set terminal dumb size 120, 30
 #c#14	$set autoscale

@@ -818,6 +818,6 @@ fi
 if [[ -z "$1" ]]; then
 head -13 $LOC
 else
-PATTERN=#$1[[:blank:]]
-grep "$PATTERN" $LOC | awk '{$1=""; print $0}'
+PATTERN=#c#$1\t
+grep "$PATTERN" $LOC | tr -d "$PATTERN"
 fi
