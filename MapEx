@@ -248,7 +248,7 @@
 #17 I cheated and added extra tabs to make the table better.  We can see that the relaxed stats lead to more mappings and  more proper pairings.
 #17	The only drawback to the more relaxed mappings is that there are more discordant mapping pairs and singletons.  These extra discordant mappings may be of very low quality and
 #18
-#18	Now on your own, try repeating #c#17 but with a mapping quality cutoff of 5 and 10.  Does the same pattern hold true?
+#18	Now on your own, try repeating #c# 17 but with a mapping quality cutoff of 5 and 10.  Does the same pattern hold true?
 #18	Your results should look like this:
 #18	2237573 	2227393 	in total (QC-passed reads + QC-failed reads)
 #18	0 			0		 	secondary
