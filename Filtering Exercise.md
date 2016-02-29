@@ -52,7 +52,7 @@ This raw.vcf file is going to have a lot of erroneous variant calls and a lot of
 To make this file more manageable.  Let's start by a three step filter.  We are going to only keep variants that have been successfully genotyped in 
 50% of individuals, a minimum quality score of 30, and a minor allele count of 3.
 ```
-vcftools --gzvcf raw.vcf.gz --geno 0.5 --mac 3 --recode --recode-INFO-all --out raw.g5mac3
+vcftools --gzvcf raw.vcf.gz --geno 0.5 --mac 3 --minQ 30 --recode --recode-INFO-all --out raw.g5mac3
 ```
 In this code, we call vcftools, feed it a vcf file after the `--vcf` flag, `--geno 0.5` tells it to filter genotypes called below 50% (across all individuals)
 the `--mac 3` flag tells it to filter SNPs that have a minor allele count less than 3.  
