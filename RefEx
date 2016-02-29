@@ -482,7 +482,7 @@
 #38 
 #38 Here, I am going to let you in on an experimental script I have been using to help optimize reference assemblies.
 #38
-#c#38	$curl -L -O curl -L -O https://raw.githubusercontent.com/jpuritz/WinterSchool.2016/master/RefMapOpt.sh
+#c#38	$curl -L -O https://raw.githubusercontent.com/jpuritz/WinterSchool.2016/master/RefMapOpt.sh
 #38
 #38 This script assembles references across cutoff values and then maps 20 random samples and evaluates mappings to the reference, along with number of contigs and coverage.  
 #39 It takes a long time to run, but here's a sample command and output

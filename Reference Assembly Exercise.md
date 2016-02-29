@@ -491,7 +491,7 @@ No surprises here from our simulated data, butI highly recommend familiarizing y
 
 Here, I am going to let you in on an experimental script I have been using to help optimize reference assemblies.
 ```bash
-curl -L -O curl -L -O https://raw.githubusercontent.com/jpuritz/WinterSchool.2016/master/RefMapOpt.sh
+curl -L -O https://raw.githubusercontent.com/jpuritz/WinterSchool.2016/master/RefMapOpt.sh
 ```
 This script assembles references across cutoff values and then maps 20 random samples and evaluates mappings to the reference, along with number of contigs and coverage.  
 It takes a long time to run, but here's a sample command and output
