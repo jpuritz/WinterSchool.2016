@@ -26,7 +26,7 @@ module load dDocent/v2.18
 ```
 Now let's get the test data I created for the course.
 ```
-curl -L -o data.zip https://www.dropbox.com/s/mo0x0mh69d4rwz3/data.zip?dl=0
+curl -L -o data.zip https://www.dropbox.com/s/t09xjuudev4de72/data.zip?dl=0
 ```
 Let's check that everything went well.
 ```bash
