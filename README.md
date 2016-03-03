@@ -27,8 +27,17 @@ University College London, UK
 ##### Prof. Dr. Daniel Wegmann 
 University of Fribourg, Switzerland
 
-* **[Lectures](https://github.com/mfumagalli/Weggis)**
-* **[Practical](https://github.com/mfumagalli/Weggis)**
+* **[Lectures](/Lectures/Day 4)**
+* **[Practical](/Exercises/Day 5)**
+
+## GWAS
+##### Dr. Arthur Korte 
+Center for Computational and Theoretical Biology, University Würzburg, Germany
+
+* **[Lectures](/Lectures/Day 5)**
+* **[Practical](/Exercises/Day 5)**
+
+
 
 
 
