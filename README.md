@@ -6,8 +6,8 @@ Welcome to my repository for course materials for [B@G<sup>2</sup>](http://www.a
 
 #### Rad SNPs from RADseq - The bioinformatics of reduced representation libraries
 ##### Dr. Jonathan Puritz 
-##### Marine Science Center
-##### Northeastern University
+Marine Science Center
+Northeastern University
 
 
 #####	[Lectures](/Lectures)
