@@ -1,0 +1,13 @@
+// Priors and rules file
+// *********************
+
+[PARAMETERS]
+//#isInt? #name	#dist.#min	#max	
+//all N are in number of diploid individuals
+0	LOG10_N_NOW	unif	2	6 output
+0	LOG10_MUTATION_RATE	unif	-9	-6 output
+
+[COMPLEX PARAMETERS]
+1	N_NOW = pow10( LOG10_N_NOW ) output
+0	MUTATION_RATE = pow10( LOG10_MUTATION_RATE ) output
+

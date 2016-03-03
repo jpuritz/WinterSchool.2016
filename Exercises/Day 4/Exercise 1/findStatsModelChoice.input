@@ -1,0 +1,42 @@
+//----------------------------------------------------------------------
+//ABCtoolbox input file to find stats for model choice
+//----------------------------------------------------------------------
+task findStatsModelChoice
+
+//observed data
+obsName constsize.obs
+
+//simulated data
+simName sims_constsize_sampling1.txt;sims_bottleneck_sampling1.txt.old
+params 2;2-4 
+outputPrefix ABC_findStats_
+
+//make sure we use all stats
+maxCor 1.0
+
+//Rejection settings
+numRetained 1000
+maxReadSims 10000
+standardizeStats 1
+writeRetained 0
+
+//Posterior estimation settings
+diracPeakWidth 0.002
+posteriorDensityPoints 200
+
+//settings for statistics finder
+modelChoiceValidation 200
+maxCorSSFinder 0.95
+numBestSetsToKeep 10
+
+//output settings
+logFile findStats.log
+verbose
+
+
+
+
+
+
+
+

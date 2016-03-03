@@ -1,0 +1,12 @@
+// Priors and rules file 
+// ********************* 
+[PARAMETERS] 
+//#isInt? #name #dist.#min #max 
+1 POPSIZE_1 unif 10 100000 output 
+1 POPSIZE_2 unif 10 100000 output 
+1 POPSIZE_ANCESTRAL unif 10 100000 output 
+1 TDIV unif 10 10000 output
+[RULES] 
+[COMPLEX PARAMETERS] 
+0 ANCESTRAL_REL = POPSIZE_ANCESTRAL/POPSIZE_1 hide 
+

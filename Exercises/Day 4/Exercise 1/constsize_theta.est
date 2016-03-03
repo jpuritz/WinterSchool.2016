@@ -1,0 +1,14 @@
+// Priors and rules file
+// *********************
+
+[PARAMETERS]
+//#isInt? #name	#dist.#min	#max	
+0	LOG10_THETA	unif	-4	-1	output
+0	LOG10_N_NOW	unif	2	6	hide
+
+[COMPLEX PARAMETERS]
+0	THETA = pow10(LOG10_THETA)	hide
+1	N_NOW = pow10(LOG10_N_NOW)	hide
+0	MUTATION_RATE = THETA / (2*N_NOW)	hide
+
+

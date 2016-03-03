@@ -1,0 +1,41 @@
+//----------------------------------------------------------------------
+//ABCtoolbox input file to do estimations of N and mu
+//----------------------------------------------------------------------
+task estimate
+estimationType standard
+
+//observed data
+obsName constsize.obs
+
+//simulated data
+simName sims_constsize_sampling1.txt
+params 2-3 
+outputPrefix ABC_estimation_constsize_
+
+//Rejection settings
+numRetained 2000
+maxReadSims 100000
+standardizeStats 1
+writeRetained 0
+pruneCorrelatedStats
+
+//Posterior estimation settings
+diracPeakWidth 0.02
+posteriorDensityPoints 200
+
+
+//settings for joint posterior
+jointPosteriors LOG10_MUTATION_RATE,LOG10_N_NOW
+jointPosteriorDensityPoints 100
+
+//output settings
+logFile estimation.log
+verbose
+
+
+
+
+
+
+
+

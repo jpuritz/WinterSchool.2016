@@ -1,0 +1,20 @@
+//----------------------------------------------------------------------
+//Inputfile to simulate contant size population with N and mu
+//----------------------------------------------------------------------
+task simulate
+
+estName constsize.est
+outName sims_constsize
+
+obsName constsize.obs
+simDataName constsize-temp_1_1.arp
+numSims 10
+simProgram ../bin/fsc25221
+simInputName constsize.par
+simArgs -i SIMINPUTNAME -n 1 -q
+sumStatProgram ../bin/arlsumstat3522_64bit
+sumStatArgs SIMDATANAME SSFILENAME 0 1
+logFile simulation.log
+
+verbose
+childOutputName childoutput.txt

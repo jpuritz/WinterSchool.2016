@@ -1,0 +1,6 @@
+/gdc_home5/groups/congenomics/day4/exercise1
+use_interf_settings
+dna_singlepop_constsize-temp/dna_singlepop_constsize-temp_1_1.arp
+0
+0
+end

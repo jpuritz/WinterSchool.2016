@@ -6,8 +6,8 @@ Welcome to my repository for course materials for [B@G<sup>2</sup>](http://www.a
 ##### Dr. Jonathan Puritz 
 Marine Science Center, Northeastern University, USA
 
-* **[Lectures](/Lectures)**
-* **[Practical](/Exercises)**
+* **[Lectures](/Lectures/Day 1)**
+* **[Practical](/Exercises/Day 1)**
 
 ## Whole Genome and Exome Datasets
 ##### Mr. Erik Garrison
@@ -20,11 +20,16 @@ Wellcome Trust Sanger Institute, UK
 ##### Dr. Matteo Fumagalli 
 University College London, UK
 
-* **[Lecture and Practical](https://github.com/mfumagalli/Weggis)**
+* **[Lectures](https://github.com/mfumagalli/Weggis)**
+* **[Practical](https://github.com/mfumagalli/Weggis)**
 
 ## Inferring complex demographies from genomic data
 ##### Prof. Dr. Daniel Wegmann 
 University of Fribourg, Switzerland
+
+* **[Lectures](https://github.com/mfumagalli/Weggis)**
+* **[Practical](https://github.com/mfumagalli/Weggis)**
+
 
 
 

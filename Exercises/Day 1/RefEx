@@ -1,0 +1,757 @@
+###Reference Assembly Tutorial###
+###B@G 2016###
+###Designed by Jon Puritz###
+
+###GOALS###
+##	1.	To set up test data for our exercise
+##	2.	To demultiplex samples with process_radtags and rename samples 
+##	3.	To use the methods of dDocent (via rainbow) to assemble reference contigs
+##	4.	To learn how optimize a de novo reference assembly
+##	5.	To learn how to utilize pyRAD to assemble loci
+###########
+
+## This tutorial is executable.  Simply type RefEx [number] to skip directly to the numbered
+## step of the tutorial.
+## Command lines start with a "$"
+
+#1 Welcome to the first exercise of B@G 2016!!
+#1
+#1 Let's get started.  First let's create a working directory for yourself for the Day 1 workshop
+
+#1		$mkdir D1W
+
+#2 Let's change into that directory and load the dDocent2.18 module
+
+#c#2	$cd D1W
+#c#2	$module load dDocent/v2.18
+
+#3 Now let's get the test data I created for the course.
+
+#c#3	$curl -L -o data.zip https://www.dropbox.com/s/t09xjuudev4de72/data.zip?dl=0
+
+#4 Let's check that everything went well.
+
+#c#4	$unzip data.zip && ll 
+
+#4 You should see something like this:
+#4 Archive:  data.zip
+#4   inflating: SimRAD.barcodes         
+#4   inflating: SimRAD_R1.fastq.gz      
+#4   inflating: SimRAD_R2.fastq.gz      
+#4   inflating: simRRLs2.py             
+#4 total 7664
+#4 -rw-r--r--. 1 jpuritz users 3127907 Feb 28 18:26 data.zip
+#4 -rwxr--r--. 1 jpuritz users     600 Mar  6  2015 SimRAD.barcodes
+#4 -rwxr--r--. 1 jpuritz users 2574784 Mar  6  2015 SimRAD_R1.fastq.gz
+#4 -rwxr--r--. 1 jpuritz users 2124644 Mar  6  2015 SimRAD_R2.fastq.gz
+#4 -rwxr--r--. 1 jpuritz users   12272 Mar  6  2015 simRRLs2.py
+#5
+#5  The data that we are going to use was simulated using the simRRLs2.py script that I modified from the one published by Deren Eaton.  
+#5 You can find the original version here (http://dereneaton.com/software/simrrls/).  Basically, the script simulated ddRAD 1000 loci 
+#5 shared across an ancestral population and two extant populations.  Each population had 180,000 individuals, and the two extant 
+#5 population split from the ancestral population 576,000 generations ago and split from each other 288,000 generation ago.  The two 
+#5 populations exchanged 4N*0.001 migrants per generation until about 2,000 generations ago.  4Nu equaled 0.00504 and mutations had a 10% 
+#5 chance of being an INDEL polymorphism.  Finally, reads for each locus were simulated on a per individual basis at a mean of 20X 
+#5 coverage (coming from a normaldistribution with a SD 8) and had an inherent sequencing error rate of 0.001. 
+#5
+#5 In short, we have two highly polymorphic populations with only slight levels of divergence from each other.  GST should be approximately
+#5 0.005. The reads are contained in the two fastq.gz files.
+#5
+#5 Let's go ahead and demultiplex the data.  This means we are going to separate individuals by barcode.
+#5 My favorite software for this task is process_radtags from the Stacks package (http://creskolab.uoregon.edu/stacks/)
+#5
+#5 process_radtags takes fastq or fastq.gz files as input along with a file that lists barcodes.  Data can be separated according to inline
+#5 barcodes (barcodes in the actual sequence), Illumina Index, or any combination of the two.  Check out the manual at this website
+#5 (http://creskolab.uoregon.edu/stacks/comp/process_radtags.php)
+#5
+#5 Let's start by making a list of barcodes.  The SimRAD.barcodes file actually has the sample name and barcode listed.  See for yourself.
+#c#5	$head SimRAD.barcodes
+#5
+#5 You should see:
+#5 PopA_01 ATGGGG
+#5 PopA_02 GGGTAA
+#5 PopA_03 AGGAAA
+#5 PopA_04 TTTAAG
+#5 PopA_05 GGTGTG
+#5 PopA_06 TGATGT
+#5 PopA_07 GGTTGT
+#5 PopA_08 ATAAGT
+#5 PopA_09 AAGATA
+#5 PopA_10 TGTGAG
+#5 
+#5 We need to turn this into a list of barcodes.  We can do this easily with the cut command.
+#c#5	$cut -f2 SimRAD.barcodes > barcodes
+#5
+#5 Now we have a list of just barcodes.  The cut command let's you select a column of text with the -f (field command).
+#5 We used -f2 to get the second column.  
+#c#5	$head barcodes
+#6
+#6 Now we can run process_radtags
+#c#6	$process_radtags -1 SimRAD_R1.fastq.gz -2 SimRAD_R2.fastq.gz -b barcodes -e ecoRI --renz_2 mspI -r -i gzfastq
+#6 The option -e specifies the 5' restriction site and --renze_2 species the 3' restriction site.  -i states the format of the input 
+#6 sequences.The -r option tells the program to fix cut sites and barcodes that have up to 1-2 mutations in them.  This can be changed 
+#6 with the --barcode_dist flag.  
+#6 
+#6 Once the program is completed.  Your output directory should have several files that look like: sample_AAGAGG.1.fq.gz
+#6 sample_AAGAGG.2.fq.gz, sample_AAGAGG.rem.1.fq.gz, and sample_AAGAGG.rem.2.fq.gz
+#7
+#7 The *.rem.*.fq.gz files would normally have files that fail process_radtags (bad barcode, ambitious cut sites), but we have 
+#7 simulated data and none of those bad reads.  We can delete.
+#7
+#c#7	$rm *rem*
+#8
+#8 The individual files are currently only names by barcode sequence.  We can rename them in an easier convention using a simple bash script.
+#8 Download the "Rename_for_dDocent.sh" script from my github repository
+#8
+#c#8	$curl -L -O https://github.com/jpuritz/dDocent/raw/master/Rename_for_dDocent.sh
+#9
+#9 Take a look at this simple script
+#c#9	$cat Rename_for_dDocent.sh
+#9
+#9 Bash scripts are a wonderful tool to automate simple tasks.  This script begins with an If statement to see if a file was provided as 
+#9 input.  If the file is not it exits and says why.  The file it requires is a two column list with the sample name in the first column 
+#9 and sample barcode in the second column.  The script reads all the names into an array and all the barcodes into a second array, and 
+#9 then gets the length of both arrays.  It then iterates with a for loop the task of renaming the samples.  
+#10
+#10 Now run the script to rename your samples and take a look at the output
+#c#10	$bash Rename_for_dDocent.sh SimRAD.barcodes
+#c#10	$ls *.fq.gz
+#10 There should now be 40 individually labeled .F.fq.gz and 40 .R.fq.gz.  Twenty from PopA and Twenty from PopB.
+#10 Now we are ready to rock!
+#11
+#11 Let's start by examining how the dDocent pipeline assembles RAD data.
+#11 First, we are going to create a set of uniq reads with counts for each individuals
+#c#11	$ls *.F.fq.gz > namelist
+#c#11	$sed -i'' -e 's/.F.fq.gz//g' namelist
+#c#11	$AWK1='BEGIN{P=1}{if(P==1||P==2){gsub(/^[@]/,">");print}; if(P==4)P=0; P++}'
+#c#11	$AWK2='!/>/'
+#c#11	$AWK3='!/NNN/'
+#c#11	$PERLT='while (<>) {chomp; $z{$_}++;} while(($k,$v) = each(%z)) {print "$v\t$k\n";}'
+#11
+#c#11	$cat namelist | parallel --no-notice -j 8 "zcat {}.F.fq.gz | mawk '$AWK1' | mawk '$AWK2' > {}.forward"
+#c#11	$cat namelist | parallel --no-notice -j 8 "zcat {}.R.fq.gz | mawk '$AWK1' | mawk '$AWK2' > {}.reverse"
+#c#11	$cat namelist | parallel --no-notice -j 8 "paste -d '-' {}.forward {}.reverse | mawk '$AWK3' | sed 's/-/NNNNNNNNNN/' | perl -e '$PERLT' > {}.uniq.seqs"
+#12
+#12 The first four lines simply set shell variables for various bits of AWK and perl code, 
+#12 to make parallelization with GNU-parallel easier. The first line after the variables, 
+#12 creates a set of forward reads for each individual by using mawk (a faster, c++ version of awk) 
+#12 to sort through the fastq file and strip away the quality scores.  The second line does the same for the PE reads.  
+#12 Lastly, the final line concatentates the forward and PE reads together (with 10 Ns between them) and then find the 
+#12 unique reads within that individual and counts the occurences (coverage).
+#12
+#12 Now we can take advantage of some of the properties for RAD sequencing.  
+#12 Sequences with very small levels of coverage within an individual are likely to be sequencing errors.  
+#12 So, for assembly, we can eliminate reads with low copy numbers to remove non-informative data!
+#12
+#12 Let's sum up the number the within individual coverage level of unique reads in our data set
+#c#12	$cat *.uniq.seqs > uniq.seqs
+#c#12	$for i in {2..20};
+#c#12	$do 
+#c#12	$echo $i >> pfile
+#c#12	$done
+#c#12	$cat pfile | parallel --no-notice "echo -n {}xxx && mawk -v x={} '\$1 >= x' uniq.seqs | wc -l" | mawk  '{gsub("xxx","\t",$0); print;}'| sort -g > uniqseq.data
+#c#12	$rm pfile
+#12
+#12 This is another example of a BASH for loop.  It uses mawk to query the first column and
+#12 select data above a certain copy number (from 2-20) and prints that to a file.
+#13
+#13 Take a look at the contents of uniqseq.data
+#c#13	$more uniqseq.data
+#14 We can even plot this to the terminal using gnuplot
+#c#14	$gnuplot << \EOF 
+#c#14	$set terminal dumb size 120, 30
+#c#14	$set autoscale
+#c#14	$set xrange [2:20] 
+#c#14	$unset label
+#c#14	$set title "Number of Unique Sequences with More than X Coverage (Counted within individuals)"
+#c#14	$set xlabel "Coverage"
+#c#14	$set ylabel "Number of Unique Sequences"
+#c#14	$plot 'uniqseq.data' with lines notitle
+#c#14	$pause -1
+#c#14	$EOF
+#14
+#14 The graph should look like:
+#14                    Number of Unique Sequences with More than X Coverage (Counted within individuals)
+#14 Number of Unique Sequences
+#14  70000 ++----------+-----------+-----------+-----------+----------+-----------+-----------+-----------+----------++
+#14        +           +           +           +           +          +           +           +           +           +
+#14        |                                                                                                          |
+#14  60000 ******                                                                                                    ++
+#14        |     ******                                                                                               |
+#14        |           ******                                                                                         |
+#14        |                 ******                                                                                   |
+#14  50000 ++                      *****                                                                             ++
+#14        |                            *                                                                             |
+#14        |                             *****                                                                        |
+#14  40000 ++                                 *                                                                      ++
+#14        |                                   ******                                                                 |
+#14        |                                         *****                                                            |
+#14        |                                              *                                                           |
+#14  30000 ++                                              *****                                                     ++
+#14        |                                                    *                                                     |
+#14        |                                                     *****                                                |
+#14  20000 ++                                                         ******                                         ++
+#14        |                                                                ******                                    |
+#14        |                                                                      ******                              |
+#14        |                                                                            ******                        |
+#14  10000 ++                                                                                 ************           ++
+#14        |                                                                                              *************
+#14        +           +           +           +           +          +           +           +           +           +
+#14      0 ++----------+-----------+-----------+-----------+----------+-----------+-----------+-----------+----------++
+#14        2           4           6           8           10         12          14          16          18          20
+#14                                                         Coverage
+#14
+#15 Now we need to choose a cutoff value.
+#15 We want to choose a value that captures as much of the diversity of the data as possible 
+#15 while simultaneously eliminating sequences that are likely errors.
+#15 Let's try 4
+#c#15	$parallel --no-notice -j 8 mawk -v x=4 \''$1 >= x'\' ::: *.uniq.seqs | cut -f2 | perl -e 'while (<>) {chomp; $z{$_}++;} while(($k,$v) = each(%z)) {print "$v\t$k\n";}' > uniqCperindv
+#c#15	$wc -l uniqCperindv
+#15 We've now reduced the data to assemble down to 7598 sequences!
+#16 But, we can go even further.
+#16 Let's now restrict data by the number of different individuals a sequence appears within.
+#c#16	$for ((i = 2; i <= 10; i++));
+#c#16	$do
+#c#16	$echo $i >> ufile
+#c#16	$done
+#16
+#c#16	$cat ufile | parallel --no-notice "echo -n {}xxx && mawk -v x={} '\$1 >= x' uniqCperindv | wc -l" | mawk  '{gsub("xxx","\t",$0); print;}'| sort -g > uniqseq.peri.data
+#c#16	$rm ufile
+#17 Again, we can plot the data:
+#c#17	$gnuplot << \EOF 
+#c#17	$set terminal dumb size 120, 30
+#c#17	$set autoscale 
+#c#17	$unset label
+#c#17	$set title "Number of Unique Sequences present in more than X Individuals"
+#c#17	$set xlabel "Number of Individuals"
+#c#17	$set ylabel "Number of Unique Sequences"
+#c#17	$plot 'uniqseq.peri.data' with lines notitle
+#c#17	$pause -1
+#c#17	$EOF
+#17
+#17 The graph should look like:
+#17                                 Number of Unique Sequences present in more than X Individuals
+#17  Number of Unique Sequences
+#17    6000 ++------------+------------+-------------+------------+-------------+------------+-------------+-----------++
+#17         +             +            +             +            +             +            +             +            +
+#17         |                                                                                                           |
+#17    5500 *****                                                                                                      ++
+#17         |    **                                                                                                     |
+#17    5000 ++     ***                                                                                                 ++
+#17         |         ***                                                                                               |
+#17         |            *                                                                                              |
+#17    4500 ++            *****                                                                                        ++
+#17         |                  ****                                                                                     |
+#17         |                      ***                                                                                  |
+#17    4000 ++                        *                                                                                ++
+#17         |                          ***********                                                                      |
+#17    3500 ++                                    ***                                                                  ++
+#17         |                                        **********                                                         |
+#17         |                                                  ***                                                      |
+#17    3000 ++                                                    ***********                                          ++
+#17         |                                                                ***                                        |
+#17         |                                                                   *************                           |
+#17    2500 ++                                                                               **************            ++
+#17         |                                                                                              *************|
+#17    2000 ++                                                                                                         +*
+#17         |                                                                                                           |
+#17         +             +            +             +            +             +            +             +            +
+#17    1500 ++------------+------------+-------------+------------+-------------+------------+-------------+-----------++
+#17         2             3            4             5            6             7            8             9            10
+#17                                                     Number of Individuals
+#17
+#18 Again, we need to choose a cutoff value.
+#18 We want to choose a value that captures as much of the diversity of the data as possible 
+#18 while simultaneously eliminating sequences that have little value on the population scale.
+#18 Let's try 4.
+#c#18	$mawk -v x=4 '$1 >= x' uniqCperindv > uniq.k.4.c.4.seqs
+#c#18	$wc -l uniq.k.4.c.4.seqs
+#18
+#18 Now we have reduced the data down to only 3840 sequences!
+#19
+#19 Let's quickly convert these sequences back into fasta format
+#19 We can do this with two quick lines of code:
+#c#19	$cut -f2 uniq.k.4.c.4.seqs > totaluniqseq
+#c#19	$mawk '{c= c + 1; print ">Contig_" c "\n" $1}' totaluniqseq > uniq.fasta
+#19 This simple script reads the totaluniqseq file line by line and add a sequence header of >Contig X
+#19
+#19 At this point, dDocent also checks for reads that have a substantial amount of Illumina adapter in them.  
+#19 Our data is simulated and does not contain adapter, so we'll skip that step for the time being.
+#20
+#20 With this, we have created our reduced data set and are ready to start assembling reference contigs.
+#20 First, let's extract the forward reads.
+#c#20	$sed -e 's/NNNNNNNNNN/\t/g' uniq.fasta | cut -f1 > uniq.F.fasta
+#20 
+#20 This uses the sed command to replace the 10N separator into a tab character and then uses the cut
+#20 function to split the files into forward reads.
+#21
+#21 Previous versions of dDocent utilized the program rainbow to do full RAD assembly; 
+#21 however, as of dDocent 2.0, parts of rainbow have been replaced for better functionality.  
+#21 For example, first step of rainbow clusters reads together using a spaced hash to estimate 
+#21 similarity in the forward reads only.  
+#21 dDocent now improves this by using clustering by alignment via the program CD-hit to achieve more accurate clustering.  
+#21 Custom AWK code then converts the output of CD-hit to match the input of the 2nd phase of rainbow.
+#21
+#c#21	$cd-hit-est -i uniq.F.fasta -o xxx -c 0.8 -T 0 -M 0 -g 1
+#21
+#21 This code clusters all off the forward reads by 80% similarity.  
+#21 This might seem low, but other functions of rainbow will break up clusters given the number and frequency of variants, 
+#21 so it's best to use a low value at this step.
+#22
+#c#22	$mawk '{if ($1 ~ /Cl/) clus = clus + 1; else  print $3 "\t" clus}' xxx.clstr | sed 's/[>Contig_,...]//g' | sort -g -k1 > sort.contig.cluster.ids
+#c#22	$paste sort.contig.cluster.ids totaluniqseq > contig.cluster.totaluniqseq
+#c#22	$sort -k2,2 -g contig.cluster.totaluniqseq | sed -e 's/NNNNNNNNNN/\t/g' > rcluster
+#22 This code then converts the output of CD-hit to match the output of the first phase of rainbow.
+#22 The output follows a simple text format of:
+#22 Read_ID	Cluster_ID	Forward_Read	Reverse_Read
+#23
+#23 Use the more, head, and/or tail function to examine the output file (rcluster)
+#23 You should see approximately 1000 as the last cluster.  
+#23 It's important to note that the numbers are not totally sequential and that there may not be 1000 clusters.  
+#23 Try the command below to get the exact number.
+#23
+#c#23	$cut -f2 rcluster | uniq | wc -l 
+#23
+#23 The actual number of clusters is 1000 in this case because this is simulated data.  
+#24
+#24 The next step of rainbow is to split clusters formed in the first step into smaller clusters 
+#24 representing significant variants.
+#24 Think of it in this way.  The first clustering steps found RAD loci, and this step is splitting the loci into alleles. 
+#24 This *also* helps to break up over clustered sequences.
+#c#24	$rainbow div -i rcluster -o rbdiv.out 
+#25
+#25 The output of the div process is similar to the previous output with the exception that the second column is now the new divided cluster_ID
+#25 (this value is numbered sequentially) and there was a column added to the end of the file that holds the original first cluster ID
+#25 The parameter -f can be set to control what is the minimum frequency of an allele necessary to divide it into its own cluster
+#25 The -K parameter controls the minimum number of alleles to split regardless of frequency.
+#25
+#c#25	$rainbow div -i rcluster -o rbdiv.out -f 0.5 -K 10
+#25
+#25 Though changing the parameter for this data set has no effect, it can make a big difference when using real data.
+#26
+#26 The third part of the rainbow process is to used the paired end reads to merge divided clusters.  
+#26 This helps to double check the clustering and dividing of the previous steps
+#26 all of which were based on the forward read.  The logic is that if divided clusters represent alleles from the same homolgous locus, 
+#26 they should have fairly similar paired end reads as well as forward.  Divided clusters that do not share similarity in the paired-end 
+#26 read represent cluster paralogs or repetitive regions.  After the divided clusters are merged,
+#26 all the forward and reverse reads are pooled and assembled for that cluster.
+#26
+#c#26	$rainbow merge -o rbasm.out -a -i rbdiv.out
+#27
+#27 A parameter of interest to add here is the -r parameter, which is the minimum number of reads to assemble.  
+#27 The default is 5 which works well if assembling reads from a single individual.
+#27 However, we are assembling a reduced data set, so there may only be one copy of a locus.  
+#27 Therefore, it's more appropriate to use a cutoff of 2.
+#c#27	$rainbow merge -o rbasm.out -a -i rbdiv.out -r 2
+#28
+#28 The rbasm output lists optimal and suboptimal contigs.  Previous versions of dDocent used rainbow's included perl scripts to retrieve 
+#28 optimal contigs.  However, as of version 2.0, dDocent uses customized AWK code to extract optimal contigs for RAD sequencing.  
+#28 
+#c#28	$cat rbasm.out <(echo "E") |sed 's/[0-9]*:[0-9]*://g' | mawk ' {
+#c#28	$if (NR == 1) e=$2;
+#c#28	$else if ($1 ~/E/ && lenp > len1) {c=c+1; print ">dDocent_Contig_" e "\n" seq2 "NNNNNNNNNN" seq1; seq1=0; seq2=0;lenp=0;e=$2;fclus=0;len1=0;freqp=0;lenf=0}
+#c#28	$else if ($1 ~/E/ && lenp <= len1) {c=c+1; print ">dDocent_Contig_" e "\n" seq1; seq1=0; seq2=0;lenp=0;e=$2;fclus=0;len1=0;freqp=0;lenf=0}
+#c#28	$else if ($1 ~/C/) clus=$2;
+#c#28	$else if ($1 ~/L/) len=$2;
+#c#28	$else if ($1 ~/S/) seq=$2;
+#c#28	$else if ($1 ~/N/) freq=$2;
+#c#28	$else if ($1 ~/R/ && $0 ~/0/ && $0 !~/1/ && len > lenf) {seq1 = seq; fclus=clus;lenf=len}
+#c#28	$else if ($1 ~/R/ && $0 ~/0/ && $0 ~/1/) {seq1 = seq; fclus=clus; len1=len}
+#c#28	$else if ($1 ~/R/ && $0 ~!/0/ && freq > freqp && len >= lenp || $1 ~/R/ && $0 ~!/0/ && freq == freqp && len > lenp) {seq2 = seq; lenp = len; freqp=freq}
+#c#28	$}' > rainbow.fasta
+#28
+#28 Now, this looks a bit complicated, but it's performing a fairly simple algorithm.  
+#28 First, the script looks at all the contigs assembled for a cluster.  If any of the contigs contain forward and PE reads, then that contig is output as optimal.  
+#28 If no overlap contigs exists (the usual for most RAD data sets), then the contig with the most assembled reads PE (most common) is output with the forward read contig with a 10 N spacer.  
+#28 If two contigs have equal number of reads, the longer contig is output. 
+#28
+#28 At this point, dDocent (version 2.0 and higher) will check for substantial overlap between F and PE reads in the contigs.  
+#28 Basically double checking rainbow's assembly.  We will skip this for our simulated data though.
+#29
+#29 Though rainbow is fairly accurate with assembly of RAD data, even with high levels of INDEL polymorphism.  
+#29 It's not perfect and the resulting contigs need to be aligned and clustered by sequence similarity.  
+#29 We can use the program cd-hit to do this.
+#29
+#c#29	$cd-hit-est -i rainbow.fasta -o referenceRC.fasta -M 0 -T 0 -c 0.9
+#29
+#29 The `-M` and `-T` flags instruct the program on memory usage (-M) and number of threads (-T).  
+#29 Setting the value to 0 uses all available.  The real parameter of significan is the -c parameter 
+#29 which sets the percentage of sequence similarity to group contigs by.  The above code uses 90%.  
+#29 Try using 95%, 85%, 80%, and 99%. 
+#29 Since this is simulated data, we know the real number of contigs, 1000.  
+#29 By choosing an cutoffs of 4 and 4, we are able to get the real number of contigs, no matter what the similarty cutoff.  
+#30
+#30 In this example, it's easy to know the correct number of reference contigs, but with real data this is less obvious.  
+#30 As you just demonstrated, varying the uniq sequence copy cutoff and the final clustering similarity have the
+#30 the largest effect on the number of final contigs.  
+#30 You could go back and retype all the steps from above to explore the data, but scripting makes this easier.
+#30 I've made a simple bash script called remake_reference.sh that will automate the process.  
+#c#30	$curl -L -O https://github.com/jpuritz/dDocent/raw/master/scripts/remake_reference.sh
+#31
+#31 You can remake a reference by calling the script along with a new cutoff value and similarity.
+#31
+#c#31	$bash remake_reference.sh 4 4 0.90 PE 2
+#31
+#31 This command will remake the reference with a cutoff of 20 copies of a unique sequence to use for assembly and a final clustering value of 90%.
+#31 It will output the number of reference sequences and create a new, indexed reference with the given parameters.
+#31 The output from the code above should be "1000"
+#31 Experiment with some different values on your own.   
+#32
+#32 What you choose for a final number of contigs will be something of a judgement call.  However, we could try to heuristically search the parameter space to find an optimal value.
+#32 Download the script to automate this process.
+#c#32	$curl -L -O https://github.com/jpuritz/dDocent/raw/master/scripts/ReferenceOpt.sh
+#33
+#33 Take a look at the script ReferenceOpt.sh.  
+#33 This script uses different loops to assemble references from an interval of cutoff values and c values from 0.8-0.98.  
+#33 It take as a while to run, so I have pasted the output below for you.
+#c#33	$#bash ReferenceOpt.sh 4 8 4 8 PE 16 #We aren't actually going to run this at the moment
+#33
+#33                                           Histogram of number of reference contigs
+#33   Number of Occurrences
+#33     200 ++--------------+--------------+---------------+--------------+---------------+--------------+--------------++
+#33         +               +              +               +      'plot.kopt.data' using (bin($1,binwidth)):(1.0)*********
+#33     180 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33         |                                                                                            *               *
+#33     160 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33     140 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33         |                                                                                            *               *
+#33     120 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33     100 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33      80 ++                                                                                           *              +*
+#33         |                                                                                            *               *
+#33         |                                                                                            *               *
+#33      60 ++                                                                                           *              +*
+#33         |                                             ************************************************               *
+#33      40 ++                                            *                                              *              +*
+#33         |                                             *                                              *               *
+#33         |                                             *                                              *               *
+#33      20 ++                                            *                                              *              +*
+#33         ***********************************************+              +               +              *               *
+#33       0 **************************************************************************************************************
+#33        988             990            992             994            996             998            1000            1002
+#33                                                  Number of reference contigs
+#33 
+#33 Average contig number = 999.452
+#33 The top three most common number of contigs
+#33 X	Contig number
+#33 164	1000
+#33 19	998
+#33 18	999
+#33 The top three most common number of contigs (with values rounded)
+#33 X	Contig number
+#33 250	1000.0
+#33
+#33 You can see that the most common number of contigs across all iteration is 1000, 
+#33 but also that the top three occuring and the average are all within 1% of the true value.
+#33 Again, this is simulated data and with real data, the number of exact reference contigs is unknown and 
+#33 you will ultimately have to make a judgement call.
+#34
+#34 Let's examine the reference a bit.
+#c#34	$bash remake_reference.sh 4 4 0.90 PE 2
+#c#34	$head reference.fasta
+#34 >dDocent_Contig_1
+#34 NAATTCCTCCGACATTGTCGGCTTTAAATAGCTCATAACTTGAGCCCAGGTAAAGACTTTAGTATACTCGCACCTTCCGCTTATCCCCCGGCCGCNNNNNNNNNNATTCAACCGCGGGACCTGAACTAACATAGCGTTGTGTATACCATCCGAGGTAACCTTATAACTCTCTGCCATTCGGACAGGTAACACGGCATATCGTCCGN
+#34 >dDocent_Contig_2
+#34 NAATTCAGAATGGTCATACAGGGCGGTAGAATGGAATCCTGAATCGAATGGCGGTTGCATTGAGAACCTGGTACCAGATAGGATCTGGATTAAATNNNNNNNNNNGTCGGGTACTAATTATCTATTGGGTCCAAACCCTCCGCCCCGTTTACTGCCCACCCGGCATGCAGTCATGAGAATTCCAAGGAACTAAGATAAGAGACCGN
+#34 >dDocent_Contig_3
+#34 NAATTCGGGCTCCTTGGAGAGATTCTTTCAATTATGCCCCCTACGTGGGAAACAGGGTCGGAAGTGGTCGGCTGAGAATTACTCGAAAGCCGCTCNNNNNNNNNNCCACCAGCATGATAGGACTTCAAGCTTGCCGTTTGTTGGGAGGACCGGTCGCTACGGAGCTGACGCTATCTCCCGCATCGGACCTCGTGGACAAAAACCGN
+#34 >dDocent_Contig_4
+#34 NAATTCAAAAGTCGCCCATAGGTACGTGATGAATTAGGTCAAGCGGGGACGTCGCATAGATGCGTGACGTCTGGAGCATGATGTTGTTTCTAACCNNNNNNNNNNAATCACTCGGTCAACGTGGTCCGTGCTCTGCAACGAAAAAAACTTCGCATGTGAACGATGATGCCTATAGGTGCGACCGCCGTCAGAGGCCCGTTGACCGN
+#34 >dDocent_Contig_5
+#34 NAATTCATACGGATATGATACTTCGTCTGGCAGGGTGGCTAGCGAGTTTAAGGATTCTTGGATAAAGGTAGGTAAAATTCTCGAGATTCTGATCTNNNNNNNNNNTAGAGGTGCTGGCGGGGCCTAGACGTGTTTCTACGCTTACTGATCAAATTAGCTAGCTTAGGTTCCTATAGTCTACGCTGGATTGTCCTTAGATGCACCGN
+#34
+#34 You can now see that we have complete RAD fragments starting with our EcoRI restriction site (AATT), followed by R1, then a filler of 10Ns,
+#34 and then R2 ending with the mspI restriction site (CCG). The start and end of the sequence are buffered with a single N
+#35
+#35 We can use simple shell commands to query this data.
+#35 Find out how many lines in the file (this is double the number of sequences)
+#c#35	$wc -l reference.fasta
+#36 Find out how many sequences there are directly by counting lines that only start with the header character ">"
+#c#36	$mawk '/>/' reference.fasta | wc -l 
+#37 We can test that all sequences follow the expected format.
+#c#37	$mawk '/^NAATT.*N*.*CCGN$/' reference.fasta | wc -l
+#c#37	$grep '^NAATT.*N*.*CCGN$' reference.fasta | wc -l
+#37 No surprises here from our simulated data, but I highly recommend familiarizing yourself with grep, awk, and regular expressions to help evaluate de novo references.
+#38
+#38 Bonus Section
+#38 
+#38 Here, I am going to let you in on an experimental script I have been using to help optimize reference assemblies.
+#38
+#c#38	$curl -L -O https://raw.githubusercontent.com/jpuritz/WinterSchool.2016/master/RefMapOpt.sh
+#38
+#38 This script assembles references across cutoff values and then maps 20 random samples and evaluates mappings to the reference, along with number of contigs and coverage.  
+#39 It takes a long time to run, but here's a sample command and output
+#39
+#c#39	$#RefMapOpt.sh 4 8 4 8 0.9 64 PE
+#39
+#39 This would loop across cutoffs of 4-8 using a similarity of 90% for clustering, parellized across 64 processors, using PE assembly technique.
+
+#40 The output is stored in a file called `mapping.results`
+#c#40	$cat mapping.results
+
+#40 Cov		Non0Cov	Contigs	MeanContigsMapped	K1	K2	SUM Mapped	SUM Properly	Mean Mapped	Mean Properly	MisMatched
+#40 37.3272	39.6102	1000	943.35				4	4	747290		747065			37364.5		37353.2			0
+#40 37.3819	39.6683	1000	943.35				4	5	748386		748110			37419.3		37405.5			0
+#40 37.4439	39.7298	1000	943.45				4	6	749626		749445			37481.3		37472.2			0
+#40 37.4826	39.7709	1000	943.45				4	7	750401		750222			37520.1		37511.1			0
+#40 37.4648	39.7522	1000	943.45				4	8	750045		749760			37502.2		37488			0
+#40 37.3382	39.6198	1000	943.4				5	4	747510		747285			37375.5		37364.2			0
+#40 37.3954	39.6805	1000	943.4				5	5	748655		748379			37432.8		37418.9			0
+#40 37.448	39.7343	1000	943.45				5	6	749710		749529			37485.5		37476.4			0
+#40 37.4689	39.7565	1000	943.45				5	7	750127		749860			37506.3		37493			0
+#40 37.4436	39.728	999		942.55				5	8	748872		748587			37443.6		37429.3			0
+#40 37.3447	39.6268	1000	943.4				6	4	747640		747433			37382		37371.7			0
+#40 37.4288	39.7117	1000	943.5				6	5	749324		749220			37466.2		37461			0
+#40 37.4724	39.7582	1000	943.5				6	6	750198		749944			37509.9		37497.2			0
+#40 37.4537	39.7405	1000	943.45				6	7	749824		749557			37491.2		37477.8			0
+#40 37.4381	39.72	999		942.6				6	8	748761		748478			37438.1		37423.9			0
+#40 37.3876	39.6723	1000	943.4				7	4	748499		748407			37424.9		37420.3			0
+#40 37.4374	39.7253	1000	943.4				7	5	749497		749388			37474.8		37469.4			0
+#40 37.4482	39.7346	1000	943.45				7	6	749714		749475			37485.7		37473.8			0
+#40 37.4117	39.6938	1000	943.5				7	7	748982		748732			37449.1		37436.6			0
+#40 37.4108	39.6893	998		941.7				7	8	747468		747207			37373.4		37360.3			0
+#40 37.4254	39.7041	1000	943.6				8	4	749256		749164			37462.8		37458.2			0
+#40 37.4307	39.7202	1000	943.35				8	5	749363		749185			37468.2		37459.2			0
+#40 37.4209	39.7042	998		941.6				8	6	747669		747400			37383.4		37370			0
+#40 37.4094	39.6924	997		940.65				8	7	746692		746416			37334.6		37320.8			0
+#40 37.4915	39.7712	989		933.3				8	8	742332		742048			37116.6		37102.4			0
+#40
+#40 I have added extra tabs for readability.  The output contains the average coverage per contig, 
+#40 the average coverage per contig not counting zero coverage contigs, the number of contigs, 
+#40 the mean number of contigs mapped, the two cutoff values used, the sum of all mapped reads, 
+#40 the sum of all properly mapped reads, the mean number of mapped reads, the mean number of properly mapped reads, 
+#40 and the number of reads that are mapped to mismatching contigs.
+#40 Here, we are looking to values that maximize properly mapped reads, the mean number of contigs mapped, and the coverage.  
+#40 In this example, it's easy.  Values 4,7 produce the highes number of properly mapped reads, coverage, and contigs. 
+#41 Real data will involve a judgement call.  Again, I haven't finished vetting this script, so use at your own risk.
+###########################################
+#42
+#42 Now, let's take a look at another way to assemble RAD data from the software package pyRAD.  Please note that many of these steps have been altered from Deren Eaton's tutorial
+#42 See http://nbviewer.ipython.org/gist/dereneaton/dc6241083c912519064e/tutorial_pairddRAD_3.0.ipynb for more details
+#42 First let's make a new directory and move into it
+#c#43	$mkdir pyrad
+#c#43	$cd pyrad
+#44	Next, let's make a symoblic link to the original fastq.gz data files and barcodes
+#c#44	$ln -s ../SimRAD.barcodes .
+#c#44	$ln -s ../SimRAD_R1.fastq.gz SimRAD_R1_.fastq.gz
+#c#44	$ln -s ../SimRAD_R2.fastq.gz SimRAD_R2_.fastq.gz
+#44	THE FORMATTING HERE IS CRITICAL.  The pyRAD package requires the files to have the _R1_ and _R2_ in the names.  
+#44	In case you weren't aware, this makes a virtual link (like one on a desktop) to a file and saves disk space by not recopying the files
+#45
+#45	Now, let's load pyRAD
+#c#45	module load pyRAD/3.0.6
+#45	Next, let's create a parameters file
+#c#46	$pyrad -n
+#46	This creates a file (params.txt) that we can edit to adjust the settings of pyRAD
+#46
+#46 We will need to edit a few values.  You can do this in a text editor like nano or emacs, but for this exercise it is easier just to use sed
+#46	First let's change the restriction sites to match our data
+#c#46	$sed -i '/## 6. /c\AATT,CCG                 ## 6. cutsites... ' ./params.txt
+#47	Next, let's change the number of processors to use in parallel to 8
+#c#47	$sed -i '/## 7. /c\8\t                 ## 7. N processors... ' ./params.txt
+#48	Change the datatype to paired ddRAD
+#c#48	$sed -i '/## 11. /c\pairddrad                 ## 11. datatype... ' ./params.txt
+#48
+#49	Now, we are ready to proceed with the pyRAD pipeline.  First step is demultiplexing files
+#c#49	$pyrad -p params.txt -s 1
+#49 You should see
+#49  ------------------------------------------------------------
+#49   pyRAD : RADseq for phylogenetics & introgression analyses
+#49  ------------------------------------------------------------
+#49
+#49
+#49  step 1: sorting reads by barcode
+#49	 .
+#49
+#50	This now created demultiplexed files with the proper pyRAD naming convention.  There are stats about the demultiplexing in the ./stats directory
+#50
+#50	The next step is quality filtering.  This is basic filtering, removing any reads with Illumina adapters in them, and replacing low quality bases with Ns.
+#c#50	$pyrad -p params.txt -s 2
+#50 You should see
+#50  ------------------------------------------------------------
+#50   pyRAD : RADseq for phylogenetics & introgression analyses
+#50  ------------------------------------------------------------
+#50
+#50
+#50  step 2: quality filtering 
+#50  ........................................
+#51	Stats about the filtering can be found in the ./stats directory.  For the simulated data set, no reads are filtered.
+#51	Unlike the previous method, pyRAD first clusters reads together within individuals for assembly
+#c#51	$pyrad -p params.txt -s 3
+#51	The output should look like:
+#51   ------------------------------------------------------------
+#51    pyRAD : RADseq for phylogenetics & introgression analyses
+#51   ------------------------------------------------------------
+#51
+#51
+#51	de-replicating files for clustering...
+#51
+#51	step 3: within-sample clustering of 40 samples at 
+#51        '.88' similarity. Running 8 parallel jobs
+#51 		with up to 6 threads per job. If needed, 
+#51			adjust to avoid CPU and MEM limits
+#51
+#51	sample PopB_10 finished, 847 loci
+#51	sample PopB_08 finished, 863 loci
+#51	sample PopA_20 finished, 863 loci
+#51	sample PopA_08 finished, 865 loci
+#51	sample PopB_12 finished, 862 loci
+#51	This will continue through all 40 samples
+#52
+#52 When the clustering step completes we can examine the results by looking at the file s3.clusters.txt in the /stats directory
+#c#52	$head -6 ./stats/s3.clusters.txt
+#52	taxa	total	dpt.me	dpt.sd	d>5.tot	d>5.me	d>5.sd	badpairs
+#52	PopA_01	869		19.824	9.084	823		20.747	8.424	78
+#52	PopA_02	867		19.722	8.822	824		20.576	8.193	95
+#52	PopA_03	870		20.322	9.59	828		21.176	9.026	88
+#52	PopA_04	899	1	9.339	9.081	860		20.076	8.582	75
+#52
+#52	This output shows us the total number of clusters for each individual, along with some information about mean depth and standard deviation of depth.
+#52	It also shows us the number of bad pairs, or mismatched 1st and 2nd reads.  In this example, we are seeing a large number ~10% of mismatched forward and reverse reads.
+#52	Considering this simulated data does NOT have any paralogs in it, there should be a very low percentage of mismatched reads.
+#53 Let's examine some good and bad clusters
+#53	The clusters are in the ./clust88 directory.  Let's look at a bad one first.
+#c#53	$zcat ./clust.88/PopA_01.badpairs.gz | head -12
+#53	>PopA_01_9392_pair;size=9;
+#53	AATTTGTGGGTTTCTCCTTAAAAGATTACCAAATTCTAGTATCAATCATCCTCCTCCCAATGCATGGAGACTGGCAACACCGTGCAGTAGCCT---nnnnTCTCGGCGGATTTGTTTACCCGCGAAGTCGTAA-CTA--CCACCACTCGACCCAACCGGTCCTAGATGACTGCTGTCATACAAT-GTCGTACCGATGA-AGA---CGG
+#53	>PopA_01_9402_pair;size=6;+
+#53	AATTTGTGGGTTTCTCCT--AAAGATTACCAAATTCTAGTATCAATCATCCTCCTCCCAATGCATGGAGA-TGGCAACACCGTGCGGTAGCCTAGAnnnn-------CGATTTGTTTACCC-CGAAGTCGTAAGCTGACCAACCACTCTACCCAACCGGTCCTAGATGACTGGTGTCATACAATCGTCGTACCGATGATAGACTGCGG
+#53	>PopA_01_9401_pair;size=1;+
+#53	AATTTGTGGGTTTCTCCT--AAAGATTACCAAATTCTAGTATCAATCATCCTCCTCCCAATGCATGGAGA-TGGCAACACCGTGCGGTAGCCTAGAnnnn-------CGATTTGTTTACCC-CGAAGTCATAAGCTGACCAACCACTCTACCCAACCGGTCCTAGATGACTGGTGTCATACAATCGTCGTACCGATGATAGACTGCGG
+#53	>PopA_01_9409_pair;size=1;+
+#53	AATTTGTGGGTTTCTCCT--AAAGATTACTAAATTCTAGTATCAATCATCCTCCTCCCAATGCATGGAGA-TGGCAACACCGTGCGGTAGCCTAGAnnnn-------CGATTTGTTTACCC-CGAAGTCGTAAGCTGACCAACCACTCTACCCAACCGGTCCTAGATGACTGGTGTCATACAATCGTCGTACCGATGATAGACTGCGG
+#53	>PopA_01_9408_pair;size=1;+
+#53	AATTTGTGGGTTTCTCCT--AAAGATTACCAAATTCTAGTATCAATCATCCTCCTCCCAATGCATGGAGA-TGGCCACACCGTGCGGTAGCCTAGAnnnn-------CGATTTGTTTACCC-CGAAGTCGTAAGCTGACCAACCACTCTACCCAACCGGTCCTAGATGACTGGTGTCATACAATCGTCGTACCGATGATAGACTGCGG
+#53 This cluster has 5 different unique sequences in it.  Three of them are only one copy (shown by the size=1 flag in the header).
+#53 The first two sequences are the only one with any high numbers.  With the current settings, pyRAD is treating this as a paralog because the PE reads have 7 gaps in the alignment.  The default setting is to only allow
+#53 3 indels.  To improve this assembly, we will likely need to increase the setting.  Let's change it to 10.
+#54
+#c#54	$sed -i '/## 27./c\10,99                     ## 27. maxIndels: within-clust,across-clust (def. 3,99) ' ./params.txt
+#54
+#55 Now, let's delete all the initial cluster files and redo this step
+#c#55	$rm ./clust.88/* && mv ./stats/s3.clusters.txt ./stats/s3.clusters.txt.old
+#c#55	$pyrad -p params.txt -s 3
+#56	Let's check the results
+#c#56	$head -50 ./stats/s3.clusters.txt
+#56	taxa	total	dpt.me	dpt.sd	d>5.tot	d>5.me	d>5.sd	badpairs
+#56	PopA_01	901		19.829	9.083	852		20.782	8.396	46
+#56	PopA_02	901		19.91	8.81	860		20.702	8.214	61
+#56	PopA_03	903		20.474	9.506	862		21.283	8.956	55
+#56	PopA_04	925		19.564	9.085	887		20.268	8.599	49
+#56
+#57	This looks better, but still not ideal.  I leave it to you to experiment further.  With real data, you will again have to make a judgement call.  Keeping looking at the alignments in the clust88 directory and let them be your guide.
+#57 You can also alter the percentage of similarity parameter to cluster by as well.  It's option number 10 in the params.txt file.  Another option to consider is the minimum number of read pairs to form a cluster.  The default is 6. and controlled
+#57 by option number 8 in the params.txt.  For the rest of this example, I am going to use a minimum coverage of 3 and a gap limit of 20.
+#c#57	$sed -i '/## 27./c\20,99                     ## 27. maxIndels: within-clust,across-clust (def. 3,99) ' ./params.txt
+#c#57	$sed -i '/## 8./c\3                     ## 8. Mindepth: min coverage for a cluster ' ./params.txt
+#58	
+#58	The next step of the pyRAD assembly calls the consensus sequence for each within-individual cluster.  It also applies filters aiming to remove potential paralogs.
+#58 It does this by estimating the error rate and level of heterozygosity in the data set and filters clusters that have too many heterozygous sits, more than 2 haplotypes, and too many low quality bases
+#c#58	$pyrad -p params.txt -s 45
+#58	The output should be like this:
+#58 ------------------------------------------------------------
+#58   pyRAD : RADseq for phylogenetics & introgression analyses
+#58 ------------------------------------------------------------
+#58
+#58
+#58	step 4: estimating error rate and heterozygosity
+#58	........................................
+#58	step 5: created consensus seqs for 40 samples, using H=0.00732 E=0.00100
+#58	........................................
+#59	The next step is to cluster between samples
+#c#59	$pyrad -p params.txt -s 6
+#59	The output on the screen should look like:
+#59     ------------------------------------------------------------
+#59      pyRAD : RADseq for phylogenetics & introgression analyses
+#59     ------------------------------------------------------------
+#59
+#59
+#59	step 6: clustering across 40 samples at '.88' similarity 
+#59
+#59	vsearch v1.1.1_linux_x86_64, 883.4GB RAM, 160 cores
+#59	https://github.com/torognes/vsearch
+#59
+#59	Reading file /gdc_home4/jpuritz/test/D1W/pyrad/clust.88/cat.firsts_ 100%  
+#59	3115443 nt in 33487 seqs, min 91, max 99, avg 93
+#59	Indexing sequences 100%  
+#59	Counting unique k-mers 100%  
+#59	Clustering 100%  
+#59	Writing clusters 100%  
+#59	Clusters: 1050 Size min 1, max 40, avg 31.9
+#59	Singletons: 19, 0.1% of seqs, 1.8% of clusters
+#60
+#60 We can see that pyRAD (via the program vsearch) found 1049 different shared reference sequences
+#60
+#60	Next we call the last step of pyRAD to produce usable outputs of all the data
+#c#60	$pyrad -p params.txt -s 7
+#60 The screen should look like:
+#60	  	------------------------------------------------------------
+#60    	pyRAD : RADseq for phylogenetics & introgression analyses
+#60   	------------------------------------------------------------
+#60
+#60		ingroup PopA_01,PopA_02,PopA_03,PopA_04,PopA_05,PopA_06,PopA_07,PopA_08,PopA_09,PopA_10,PopA_11,PopA_12,PopA_13,PopA_14,PopA_15,PopA_16,PopA_17,PopA_18,PopA_19,PopA_20,PopB_00,PopB_01,PopB_02,PopB_03,PopB_04,PopB_05,PopB_06,PopB_07,PopB_08,PopB_09,PopB_10,PopB_11,PopB_12,PopB_13,PopB_14,PopB_15,PopB_16,PopB_17,PopB_18,PopB_19
+#60		addon 
+#60		exclude 
+#60		................................................................
+#60		final stats written to:
+#60	 	/gdc_home4/jpuritz/test/D1W/pyrad/stats/c88d6m4p3.stats
+#60		output files being written to:
+#60	 	/gdc_home4/jpuritz/test/D1W/pyrad/outfiles/ directory
+#60
+#61	Let's take a look at the stats.
+#c#61	$head ./stats/c88d6m4p3.stats 
+#61	1018        ## loci with > minsp containing data
+#61	108         ## loci with > minsp containing data & paralogs removed
+#61	108         ## loci with > minsp containing data & paralogs removed & final filtering
+#61
+#61	## number of loci recovered in final data set for each taxon.
+#61	taxon	nloci
+#61	PopA_01	68
+#61	PopA_02	67
+#61
+#62 What the heck happened to all our data?  We went from 1009 RAD fragments to 77???????
+#62 It looks like pyRAD is inferring that almost all of the loci are paralogs
+#62 Remember, pyRAD is designed to generate phylogenetic data sets and is not default configured to deal with highly polymorphic populations.
+#62 Setting number 13 sets the maximum number of individuals with a shared heterozygous site.  The default configuration is only 3.  
+#62 In a population we expect that heterozygosity maxes out at 50%.  In this simulated data, we have two populations of 20 individuals each, and 
+#62 with little genetic structure between them.  Let's try setting this to 20 and rerunning step 7.
+#c#62	$sed -i '/## 13./c\20                     ## 13. MaxSH: max inds with shared hetero site ' ./params.txt
+#c#62	$rm ./outfiles/* && pyRAD -p params.txt -s 7
+#63	
+#63	Let's see if that helped.
+#c#63	$head ./stats/c88d6m4p3.stats
+#63	1018        ## loci with > minsp containing data
+#63	970         ## loci with > minsp containing data & paralogs removed
+#63	970         ## loci with > minsp containing data & paralogs removed & final filtering
+#63
+#63 ## number of loci recovered in final data set for each taxon.
+#63 taxon	nloci
+#63	PopA_01	806
+#63	PopA_02	802
+#64
+#64 That looks much better! 970 is very close to the actual value!
+#64	Now that you know how to manipulate the different parameters in pyRAD, experiment on your own to see if you can find the right settings to get to 
+#64	the correct number of loci!
+######################################
+#65 Bonus
+#65 Want to play with PyRAD more?  Try adding more outputs via line number 30 in the params.txt file
+#65	Check out the general use tutorial and paired ddRAD tutorial here http://dereneaton.com/software/pyrad/
+#!/bin/bash
+if which RefEx &>/dev/null; then
+    LOC=$(which RefEx)
+else
+	LOC="./RefEx"
+fi
+if [[ -z "$1" ]]; then
+head -16 $LOC | grep "##" 
+else
+PATTERN=#$1[[:blank:]]
+PATTERN2=#c#$1
+PATTERN4=^$1
+grep $PATTERN $LOC | sed 's/'$PATTERN2'\t/ /g' | sed 's/#'$1'\s/ /g'
+fi
