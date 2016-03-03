@@ -2,7 +2,7 @@
 
 Welcome to my repository for course materials for [B@G<sup>2</sup>](http://www.adaptation.ethz.ch/education/winter-school-2016.html)!
 
-### Day 1
+## Day 1
 
 #### Rad SNPs from RADseq - The bioinformatics of reduced representation libraries
 ##### Dr. Jonathan Puritz 
