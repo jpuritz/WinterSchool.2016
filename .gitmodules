@@ -1,0 +1,6 @@
+[submodule "WinterSchool.2016/Day 2/Practical"]
+	path = WinterSchool.2016/Day 2/Practical
+	url = https://github.com/ekg/alignment-and-variant-calling-tutorial
+[submodule "Day 2/Practical"]
+	path = Day 2/Practical
+	url = https://github.com/ekg/alignment-and-variant-calling-tutorial
