@@ -1,1 +1,0 @@
-Repository for Adaptation to a Changing Environment Winter School 2016
