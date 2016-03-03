@@ -1,0 +1,3 @@
+[submodule "Day 2/Practical/alignment-and-variant-calling-tutorial"]
+	path = Day 2/Practical/alignment-and-variant-calling-tutorial
+	url = https://github.com/ekg/alignment-and-variant-calling-tutorial
