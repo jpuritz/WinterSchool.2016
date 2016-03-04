@@ -15,7 +15,10 @@ if(black==T) {
 plot_col<-rep(c('gray10','gray60'),ceiling(max(unique(output_ok$Chr))/2))
 } else { 
 require(RColorBrewer)
-plot_col<-brewer.pal(5, "Set1")}
+colourCount = length(unique(output_ok$Chr))
+getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+
+plot_col<-getPalette(colourCount)}
 size<-aggregate(output_ok$Pos,list(output_ok$Chr),length)$x
 
 a<-rep(maxpos[1],size[1])
