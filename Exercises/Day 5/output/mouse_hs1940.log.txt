@@ -1,0 +1,21 @@
+##
+## GEMMA Version = 0.95alpha
+##
+## Command Line Input = -g /usr/local/gemma/example/mouse_hs1940.geno.txt.gz -p /usr/local/gemma/example/mouse_hs1940.pheno.txt -a /usr/local/gemma/example/mouse_hs1940.anno.txt -gk -o mouse_hs1940 
+##
+## Date = Thu Mar  3 17:30:44 2016
+
+##
+## Summary Statistics:
+## number of total individuals = 1940
+## number of analyzed individuals = 1410
+## number of covariates = 1
+## number of phenotypes = 1
+## number of total SNPs = 12226
+## number of analyzed SNPs = 10768
+##
+## Computation Time:
+## total computation time = 0.660333 min 
+## computation time break down: 
+##      time on calculating relatedness matrix = 0.551333 min 
+##

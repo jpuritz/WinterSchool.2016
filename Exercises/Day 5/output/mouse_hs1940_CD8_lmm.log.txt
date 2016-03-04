@@ -1,0 +1,33 @@
+##
+## GEMMA Version = 0.95alpha
+##
+## Command Line Input = -g /usr/local/gemma/example/mouse_hs1940.geno.txt.gz -p /usr/local/gemma/example/mouse_hs1940.pheno.txt -n 1 -a /usr/local/gemma/example/mouse_hs1940.anno.txt -k ./output/mouse_hs1940.cXX.txt -lmm -o mouse_hs1940_CD8_lmm 
+##
+## Date = Thu Mar  3 17:35:27 2016
+
+##
+## Summary Statistics:
+## number of total individuals = 1940
+## number of analyzed individuals = 1410
+## number of covariates = 1
+## number of phenotypes = 1
+## number of total SNPs = 12226
+## number of analyzed SNPs = 10768
+## REMLE log-likelihood in the null model = -1584.34
+## MLE log-likelihood in the null model = -1584.72
+## lambda REMLE estimate in the null (linear mixed) model = 4.32887
+## lambda MLE estimate in the null (linear mixed) model = 4.34046
+## pve estimate in the null model = 0.608801
+## se(pve) in the null model = 0.032774
+## vg estimate in the null model = 1.47657
+## ve estimate in the null model = 0.341097
+## beta estimate in the null model =   -9.97672e-17
+## se(beta) =   0.0155535
+##
+## Computation Time:
+## total computation time = 0.889833 min 
+## computation time break down: 
+##      time on eigen-decomposition = 0.0928333 min 
+##      time on calculating UtX = 0.220333 min 
+##      time on optimization = 0.440667 min 
+##
