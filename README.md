@@ -28,7 +28,7 @@ University College London, UK
 University of Fribourg, Switzerland
 
 * **[Lectures](/Lectures/Day 4)**
-* **[Practical](/Exercises/Day 5)**
+* **[Practical](/Exercises/Day 4)**
 
 ## GWAS
 ##### Dr. Arthur Korte 
